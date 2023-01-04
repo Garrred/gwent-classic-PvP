@@ -1,5 +1,9 @@
 "use strict"
 
+var jsdom = require("jsdom");
+var JSDOM = jsdom.JSDOM;
+global.document = new JSDOM(html).window.document;
+
 class Controller {}
 
 // Can make actions during turns like playing cards that it owns

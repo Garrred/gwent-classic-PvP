@@ -1,0 +1,26 @@
+{
+  "name": "gwent_pvp",
+  "version": "1.0.0",
+  "description": "A pvp version of classic gwent card game from The Witcher 3!",
+  "main": "gwent.js",
+  "scripts": {
+    "start": "node gwent",
+    "dev": "nodemon backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Garrred/Gwent_PVP.git"
+  },
+  "author": "Feijun Chen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Garrred/Gwent_PVP/issues"
+  },
+  "homepage": "https://github.com/Garrred/Gwent_PVP#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "jsdom": "^20.0.3",
+    "nodemon": "^2.0.20",
+    "socket.io": "^4.5.4"
+  }
+}
