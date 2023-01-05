@@ -2,10 +2,10 @@
   "name": "gwent_pvp",
   "version": "1.0.0",
   "description": "A pvp version of classic gwent card game from The Witcher 3!",
-  "main": "gwent.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node gwent",
-    "dev": "nodemon backend"
+    "start": "node server",
+    "dev": "nodemon server"
   },
   "repository": {
     "type": "git",

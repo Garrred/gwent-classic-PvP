@@ -1,7 +1,7 @@
 const express = require("express");
 const socketio = require("socket.io");
 const http = require("http");
-const cors = require("cors");
+// const cors = require("cors");
 const { userJoin, userExit, getUser, getUsersInRoom } = require("./utils/users");
 const path = require("path");
 
@@ -11,26 +11,36 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-app.use(cors());
+app.use(express.static(path.join(__dirname, "public")));
+// app.use(cors());
 
 io.on("connection", (socket) => {
-  socket.on("joinRoom", (payload, callback) => {
-    let numberOfUsersInRoom = getUsersInRoom(payload.room).length;
-
-    const newUser= userJoin({
+  socket.on("joinRoom", room => {
+    let numberOfUsersInRoom = getUsersInRoom(room).length;
+    
+    const {error ,newUser }= userJoin({
       id: socket.id,
       name: numberOfUsersInRoom === 0 ? "Player 1" : "Player 2",
-      room: payload.room,
+      room: room,
     });
-
+    if(error) {
+      socket.emit("roomFull", "");
+      // console.log("ROOM FULL!");
+      return;
+    }
+    
     socket.join(newUser.room);
 
-    io.to(newUser.room).emit("roomData", {
-      room: newUser.room,
-      users: getUsersInRoom(newUser.room),
-    });
-    socket.emit("currentUserData", { name: newUser.name });
-    callback();
+    if (numberOfUsersInRoom === 1) {
+      io.to(newUser.room).emit("gameReady", "");
+      io.to(newUser.room).emit("startGame", "");
+    }
+
+    console.log(numberOfUsersInRoom);
+    // io.to(newUser.room).emit("roomData", {
+    //   room: newUser.room,
+    //   users: getUsersInRoom(newUser.room),
+    // });
   });
 
   socket.on("initGameState", (gameState) => {
@@ -43,22 +53,22 @@ io.on("connection", (socket) => {
     if (user) io.to(user.room).emit("updateGameState", gameState);
   });
 
-  socket.on("sendMessage", (payload, callback) => {
-    const user = getUser(socket.id);
-    io.to(user.room).emit("message", {
-      user: user.name,
-      text: payload.message,
-    });
-    callback();
-  });
+  // socket.on("sendMessage", (payload, callback) => {
+  //   const user = getUser(socket.id);
+  //   io.to(user.room).emit("message", {
+  //     user: user.name,
+  //     text: payload.message,
+  //   });
+  //   callback();
+  // });
 
   socket.on("disconnect", () => {
     const user = userExit(socket.id);
-    if (user)
-      io.to(user.room).emit("roomData", {
-        room: user.room,
-        users: getUsersInRoom(user.room),
-      });
+    // if (user)
+    //   io.to(user.room).emit("roomData", {
+    //     room: user.room,
+    //     users: getUsersInRoom(user.room),
+    //   });
   });
 });
 
