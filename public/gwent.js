@@ -7,8 +7,10 @@ console.log(playerNum);
 socket.on("playerJoin", () => {
   console.log("New player joined");
 });
-
+socket.on("AAA", () =>
+  console.log("Received AAA message from server"));
 // socket.emit("updateGameState", code.roomCode);
+socket.emit("In", playerId);
 
 var playerTag = playerNum === 0 ? "player1" : "player2";
 
@@ -2221,6 +2223,38 @@ class DeckMaker {
     this.deck = [];
     this.stats = {};
   }
+//   waitForServerMessage() {
+//     return new Promise((resolve) => {
+//       socket.on("allPlayersReady", (message) => {
+//         resolve(message);
+//       });
+//     });
+//   }
+
+//   async handleServerMessage() {
+// 	try {
+// 		const message = await this.waitForServerMessage();
+// 		console.log('Received message from server:', message);
+// 		game.startGame();
+// 	  } catch (error) {
+// 		console.error('Error while waiting for server message:', error);
+// 	  }
+//     // const message = await this.waitForServerMessage();
+//     // console.log("Received message from server:", message);
+//   }
+async handleServerMessage() {
+	try {
+	  await new Promise((resolve) => {
+		socket.on("allPlayersReady", (message) => {
+		  resolve(message);
+		});
+	  });
+	  console.log("Received allPlayersReady message from server!");
+	  game.startGame();
+	} catch (error) {
+	  console.error('Error while waiting for server message:', error);
+	}
+  }
 
   // Verifies current deck, creates the players and their decks, then starts a new game
   readyToStartNewGame() {
@@ -2239,16 +2273,14 @@ class DeckMaker {
 
     player1 = new Player(my_deck);
 
-	console.log("Waiting for player");
-	this.elem.classList.add("hide");
+    console.log("Waiting for player");
+    this.elem.classList.add("hide");
     socket.emit("waitForPlayer", playerId);
-
-	//   socket.on("allPlayersReady", () => {
-	//     game.startGame();
-	//   })
+    // this.handleServerMessage();
+    console.log("Waiting for player done");
+    //   socket.on("allPlayersReady", () => {
+    //   })
   }
-
-
 
   // Converts the current deck to a JSON string
   deckToJSON() {
@@ -2573,7 +2605,9 @@ var player1, player2;
 ui.enablePlayer(false);
 let dm = new DeckMaker();
 
-socket.on("playerReady", () => {
-  this.elem.classList.add("hide");
-  game.startGame();
-});
+socket.on("allPlayersReady", (message) => {
+	console.log("ATTHEEND: Received allPlayersReady message from server:", message);
+  });
+
+socket.on("AAA", () =>
+  console.log("Received AAA message from server"));

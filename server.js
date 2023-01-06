@@ -2,7 +2,13 @@ const express = require("express");
 const socketio = require("socket.io");
 const http = require("http");
 // const cors = require("cors");
-const { userJoin, userExit, getUser, getUsersInRoom, getAllUsers } = require("./utils/users");
+const {
+  userJoin,
+  userExit,
+  getUser,
+  getUsersInRoom,
+  getAllUsers,
+} = require("./utils/users");
 const path = require("path");
 
 const PORT = process.env.PORT || 3000;
@@ -20,15 +26,15 @@ let id = 0;
 
 io.on("connection", (socket) => {
   const playerId = id++;
-  socket.on("joinRoom", room => {
+  socket.on("joinRoom", (room) => {
     let numberOfUsersInRoom = getUsersInRoom(room).length;
-    
-    const { error ,newUser }= userJoin({
+
+    const { error, newUser } = userJoin({
       id: playerId,
       name: numberOfUsersInRoom === 0 ? "Player 1" : "Player 2",
       room: room,
     });
-    if(error) {
+    if (error) {
       socket.emit("roomFull");
       // console.log("ROOM FULL!");
       return;
@@ -36,13 +42,13 @@ io.on("connection", (socket) => {
 
     socket.emit("setId", playerId, numberOfUsersInRoom);
     // console.log("New player joined: " + playerId);
-    
+
     socket.join(newUser.room);
     if (numberOfUsersInRoom === 1) {
       io.to(newUser.room).emit("startGame");
     }
 
-    // io.to(newUser.room).emit("playerJoin", "");
+    io.to(newUser.room).emit("playerJoin", "");
     console.log(numberOfUsersInRoom);
     // io.to(newUser.room).emit("roomData", {
     //   room: newUser.room,
@@ -50,25 +56,32 @@ io.on("connection", (socket) => {
     // });
   });
 
+  socket.on("In", (id) => {
+    console.log("In: " + id);
+  });
   socket.on("waitForPlayer", (id) => {
-    console.log("Waiting for player...: " + id);
-    // send "PlayerReady" to room if both players are ready
-    const user = getUser(id);
-    // console.log(socket.id);
-    getAllUsers();
+    try {
+      console.log("Waiting for player...: " + id);
+      // send "PlayerReady" to room if both players are ready
+      const user = getUser(id);
+      // console.log(socket.id);
+      getAllUsers();
 
-    console.log(typeof id);
+      console.log(typeof id);
 
-    if (user) {
-      console.log("Player ready!");
-      if (!readyCounts[user.room]) {
-        readyCounts[user.room] = 0;
+      if (user) {
+        console.log("Player ready!");
+        if (!readyCounts[user.room]) {
+          readyCounts[user.room] = 0;
+        }
+        if (++readyCounts[user.room] === 2) {
+          io.to(user.room).emit("allPlayersReady", "ha");
+          io.to(user.room).emit("AAA", "ha");
+          console.log("All players ready!");
+        }
       }
-      if (++readyCounts[user.room] === 2)
-      {
-        io.to(user.room).emit("allPlayersReady");
-        console.log("All players ready!");
-      }
+    } catch (error) {
+      console.error("Error while handling waitForPlayer message:", error);
     }
   });
 
@@ -85,7 +98,7 @@ io.on("connection", (socket) => {
   socket.on("test", () => {
     console.log("TEST SUCCEEDED!");
   });
-  
+
   // socket.on("sendMessage", (payload, callback) => {
   //   const user = getUser(socket.id);
   //   io.to(user.room).emit("message", {
