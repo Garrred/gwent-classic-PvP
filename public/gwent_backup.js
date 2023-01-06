@@ -1,48 +1,56 @@
 "use strict";
 
 var socket = io();
-const playerNum = sessionStorage.getItem("playerNum");
-const playerId = parseInt(sessionStorage.getItem("playerId"));
-console.log(playerNum);
+var ui = new UI();
+var board = new Board();
+var weather = new Weather();
+var game = new Game();
+var player1, player2;
+var myTag;
+
+ui.enablePlayer(false);
+let dm = new DeckMaker();
+
 socket.on("playerJoin", () => {
-  console.log("New player joined");
-});
+	console.log("New player joined");
+})
 
 // socket.emit("updateGameState", code.roomCode);
 
-var playerTag = playerNum === 0 ? "player1" : "player2";
 
 class Controller {}
 
 // Can make actions during turns like playing cards that it owns
 class Player {
-  constructor(deck) {
+  constructor(id, name, deck) {
+    this.id = id;
+    this.tag = id === 0 ? "player1" : "player2";
     this.controller = new Controller();
 
-    this.hand = new Hand(playerTag);
-    this.grave = new Grave(document.getElementById("grave-" + playerTag));
+    this.hand = new Hand(this.tag);
+    this.grave = new Grave(document.getElementById("grave-" + this.tag));
     this.deck = new Deck(
       deck.faction,
-      document.getElementById("deck-" + playerTag)
+      document.getElementById("deck-" + this.tag)
     );
     this.deck_data = deck;
 
     this.leader = new Card(deck.leader, this);
-    this.elem_leader = document.getElementById("leader-" + playerTag);
+    this.elem_leader = document.getElementById("leader-" + this.tag);
     this.elem_leader.children[0].appendChild(this.leader.elem);
 
     this.reset();
 
-    document.getElementById("name-" + playerTag).innerHTML =
-      playerNum === 0 ? "Player 1" : "Player 2";
+    this.name = name;
+    document.getElementById("name-" + this.tag).innerHTML = name;
 
-    document.getElementById("deck-name-" + playerTag).innerHTML =
+    document.getElementById("deck-name-" + this.tag).innerHTML =
       factions[deck.faction].name;
     document
-      .getElementById("stats-" + playerTag)
+      .getElementById("stats-" + this.tag)
       .getElementsByClassName("profile-img")[0].children[0].children[0];
     let x = document.querySelector(
-      "#stats-" + playerTag + " .profile-img > div > div"
+      "#stats-" + this.tag + " .profile-img > div > div"
     );
     x.style.backgroundImage = iconURL("deck_shield_" + deck.faction);
   }
@@ -62,8 +70,8 @@ class Player {
 
     this.enableLeader();
     this.setPassed(false);
-    document.getElementById("gem1-" + playerTag).classList.add("gem-on");
-    document.getElementById("gem2-" + playerTag).classList.add("gem-on");
+    document.getElementById("gem1-" + this.tag).classList.add("gem-on");
+    document.getElementById("gem2-" + this.tag).classList.add("gem-on");
   }
 
   // Returns the opponent Player
@@ -74,7 +82,7 @@ class Player {
   // Updates the player's total score and notifies the gamee
   updateTotal(n) {
     this.total += n;
-    document.getElementById("score-total-" + playerTag).children[0].innerHTML =
+    document.getElementById("score-total-" + this.tag).children[0].innerHTML =
       this.total;
     board.updateLeader();
   }
@@ -83,7 +91,7 @@ class Player {
   setWinning(isWinning) {
     if (this.winning ^ isWinning)
       document
-        .getElementById("score-total-" + playerTag)
+        .getElementById("score-total-" + this.tag)
         .classList.toggle("score-leader");
     this.winning = isWinning;
   }
@@ -91,13 +99,13 @@ class Player {
   // Puts the player in the passed state
   setPassed(hasPassed) {
     if (this.passed ^ hasPassed)
-      document.getElementById("passed-" + playerTag).classList.toggle("passed");
+      document.getElementById("passed-" + this.tag).classList.toggle("passed");
     this.passed = hasPassed;
   }
 
   // Sets up board for turn
   async startTurn() {
-    document.getElementById("stats-" + playerTag).classList.add("current-turn");
+    document.getElementById("stats-" + this.tag).classList.add("current-turn");
     if (this.leaderAvailable)
       this.elem_leader.children[1].classList.remove("hide");
 
@@ -153,7 +161,7 @@ class Player {
       document.getElementById("pass-button").classList.add("noclick");
     }
     document
-      .getElementById("stats-" + playerTag)
+      .getElementById("stats-" + this.tag)
       .classList.remove("current-turn");
     this.elem_leader.children[1].classList.add("hide");
     game.endTurn();
@@ -164,7 +172,7 @@ class Player {
     if (!win) {
       if (this.health < 1) return;
       document
-        .getElementById("gem" + this.health + "-" + playerTag)
+        .getElementById("gem" + this.health + "-" + this.tag)
         .classList.remove("gem-on");
       this.health--;
     }
@@ -470,13 +478,13 @@ class Deck extends CardContainer {
 
   // Sends the top card to the passed hand
   async draw(hand) {
-    // if (hand === player2.hand)
-    // 	hand.addCard(this.removeCard(0));
-    // else
-    // 	await board.toHand(this.cards[0], this);
+    // if (hand === player2.hand) 
+	// 	hand.addCard(this.removeCard(0));
+    // else 
+	// 	await board.toHand(this.cards[0], this);
 
-    // if (hand !== player.hand) return;
-    await board.toHand(this.cards[0], this);
+	// if (hand !== player.hand) return;
+	await board.toHand(this.cards[0], this);
   }
 
   // Draws a card and sends it to the container before adding a card from the container back to the deck.
@@ -847,9 +855,8 @@ class Board {
     this.me_score = 0;
     this.row = [];
     for (let x = 0; x < 6; ++x) {
-      let elem = document.getElementById(
-        x < 3 ? "field-player2" : "field-player1"
-      ).children[x % 3];
+      let elem = document.getElementById(x < 3 ? "field-player2" : "field-player1")
+        .children[x % 3];
       this.row[x] = new Row(elem);
     }
   }
@@ -2231,24 +2238,33 @@ class DeckMaker {
       warning += "Your deck must have no more than 10 special cards. \n";
     if (warning != "") return alert(warning);
 
-    let my_deck = {
+    let p1_deck = {
       faction: this.faction,
       leader: card_dict[this.leader.index],
       cards: this.deck.filter((x) => x.count > 0),
     };
 
-    player1 = new Player(my_deck);
+    let p2_deck = {
+      faction: this.faction,
+      leader: card_dict[this.leader.index],
+      cards: this.deck.filter((x) => x.count > 0),
+    };
 
-	console.log("Waiting for player");
-	this.elem.classList.add("hide");
-    socket.emit("waitForPlayer", playerId);
+    // let op_deck = JSON.parse( premade_deck[randomInt(Object.keys(premade_deck).length)] );
+    // op_deck.cards = op_deck.cards.map(c => ({index:c[0], count:c[1]}) );
+    // //op_deck.leader = card_dict[op_deck.leader];
+    //
+    // let leaders = card_dict.filter(c => c.row === "leader" && c.deck === op_deck.faction);
+    // op_deck.leader = leaders[randomInt(leaders.length)];
+    // //op_deck.leader = card_dict.filter(c => c.row === "leader")[12];
 
-	//   socket.on("allPlayersReady", () => {
-	//     game.startGame();
-	//   })
+    player1 = new Player(0, "Player 1", p1_deck);
+    player2 = new Player(1, "Player 2", p2_deck);
+    // player_op = new Player(1, "Player 2", op_deck);
+
+    this.elem.classList.add("hide");
+    game.startGame();
   }
-
-
 
   // Converts the current deck to a JSON string
   deckToJSON() {
@@ -2394,10 +2410,10 @@ async function translateTo(card, container_source, container_dest) {
         ? elem.offsetWidth / 2
         : -elem.offsetWidth / 2;
   }
-  //   if (card.holder.controller instanceof ControllerAI) x += elem.offsetWidth / 2;
+//   if (card.holder.controller instanceof ControllerAI) x += elem.offsetWidth / 2;
   if (container_source !== this) {
-    // console.log("is this opponent");
-    x += elem.offsetWidth / 2;
+	// console.log("is this opponent");
+	x += elem.offsetWidth / 2;
   }
   if (
     container_source instanceof Row &&
@@ -2511,6 +2527,8 @@ async function fade(fadeIn, elem, dur, delay) {
   }, dur / 24);
 }
 
+
+
 //      Get Image paths
 function iconURL(name, ext = "png") {
   return imgURL("icons/" + name, ext);
@@ -2560,20 +2578,8 @@ function sleepUntil(predicate, ms) {
 
 // Initializes the interractive YouTube object
 function onYouTubeIframeAPIReady() {
-  //   ui.initYouTube();
+//   ui.initYouTube();
 }
 /*----------------------------------------------------*/
 
-var ui = new UI();
-var board = new Board();
-var weather = new Weather();
-var game = new Game();
-var player1, player2;
 
-ui.enablePlayer(false);
-let dm = new DeckMaker();
-
-socket.on("playerReady", () => {
-  this.elem.classList.add("hide");
-  game.startGame();
-});

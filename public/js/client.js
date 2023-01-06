@@ -1,5 +1,6 @@
 const roomCode = document.getElementById("room-code");
 
+
 // roomCode.innerHTML = `<h1>${generateCode()}</h1>`;
 var code  = Qs.parse(location.search, {ignoreQueryPrefix: true});
 
@@ -16,6 +17,14 @@ socket.emit("joinRoom", code.roomCode);
 // socket.on("gameReady", () => {
 //   console.log("GAME READY!");
 // });
+
+socket.on("setId", ( id, num ) => {
+  sessionStorage.setItem("playerId", id);
+  sessionStorage.setItem("playerNum", num);
+  console.log("Player ID: " + id);
+  console.log("Player Number: " + num);
+})
+
 
 socket.on("startGame", () => {
   window.location.pathname = "./gwent.html";
