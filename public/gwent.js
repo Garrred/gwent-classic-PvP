@@ -466,8 +466,9 @@ class Deck extends CardContainer {
 
   // Sends the top card to the passed hand
   async draw(hand) {
-    if (hand === player2.hand) hand.addCard(this.removeCard(0));
-    else await board.toHand(this.cards[0], this);
+    // if (hand === player2.hand) hand.addCard(this.removeCard(0));
+    // else await board.toHand(this.cards[0], this);
+	await board.toHand(this.cards[0], this);
   }
 
   // Draws a card and sends it to the container before adding a card from the container back to the deck.
@@ -509,12 +510,12 @@ class Deck extends CardContainer {
   }
 }
 
-// Hand used by computer AI. Has an offscreen HTML element for card transitions.
-class HandAI extends CardContainer {
+// Hand used by player2. Has an offscreen HTML element for card transitions.
+class HandPlayer2 extends CardContainer {
   constructor() {
     super(undefined);
-    this.counter = document.getElementById("hand-count-op");
-    this.hidden_elem = document.getElementById("hand-op");
+    this.counter = document.getElementById("hand-count-player2");
+    this.hidden_elem = document.getElementById("hand-player2");
   }
   resize() {
     this.counter.innerHTML = this.cards.length;
@@ -525,7 +526,7 @@ class HandAI extends CardContainer {
 class Hand extends CardContainer {
   constructor(elem) {
     super(elem);
-    this.counter = document.getElementById("hand-count-me");
+    this.counter = document.getElementById("hand-count-player1");
   }
 
   // Override
@@ -658,7 +659,7 @@ class Row extends CardContainer {
       total += this.cardScore(card);
     }
     let player =
-      this.elem_parent.parentElement.id === "field-op" ? player2 : player1;
+      this.elem_parent.parentElement.id === "field-player2" ? player2 : player1;
     player.updateTotal(total - this.total);
     this.total = total;
     this.elem_parent.getElementsByClassName("row-score")[0].innerHTML =
@@ -838,7 +839,7 @@ class Board {
     this.me_score = 0;
     this.row = [];
     for (let x = 0; x < 6; ++x) {
-      let elem = document.getElementById(x < 3 ? "field-op" : "field-me")
+      let elem = document.getElementById(x < 3 ? "field-player2" : "field-player1")
         .children[x % 3];
       this.row[x] = new Row(elem);
     }
@@ -1024,7 +1025,7 @@ class Game {
 
   // Allows the player to swap out up to two cards from their iniitial hand
   async initialRedraw() {
-    for (let i = 0; i < 2; i++) player2.controller.redraw();
+    // for (let i = 0; i < 2; i++) player2.controller.redraw();
     await ui.queueCarousel(
       player1.hand,
       2,
@@ -2393,7 +2394,11 @@ async function translateTo(card, container_source, container_dest) {
         ? elem.offsetWidth / 2
         : -elem.offsetWidth / 2;
   }
-  if (card.holder.controller instanceof ControllerAI) x += elem.offsetWidth / 2;
+//   if (card.holder.controller instanceof ControllerAI) x += elem.offsetWidth / 2;
+  if (container_source !== this) {
+	// console.log("is this opponent");
+	x += elem.offsetWidth / 2;
+  }
   if (
     container_source instanceof Row &&
     container_dest instanceof Grave &&
@@ -2432,7 +2437,7 @@ async function translateTo(card, container_source, container_dest) {
 
   // Returns the source container's element to transition from
   function getSourceElem(card, source, dest) {
-    if (source instanceof HandAI) return source.hidden_elem;
+    if (source instanceof HandPlayer2) return source.hidden_elem;
     if (source instanceof Deck)
       return source.elem.children[source.elem.children.length - 2];
     return source.elem;
@@ -2440,7 +2445,7 @@ async function translateTo(card, container_source, container_dest) {
 
   // Returns the destination container's element to transition to
   function getDestinationElem(card, source, dest) {
-    if (dest instanceof HandAI) return dest.hidden_elem;
+    if (dest instanceof HandPlayer2) return dest.hidden_elem;
     if (card.isSpecial() && dest instanceof Row) return dest.elem_special;
     if (
       dest instanceof Row ||
