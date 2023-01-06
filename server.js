@@ -30,12 +30,12 @@ io.on("connection", (socket) => {
     }
     
     socket.join(newUser.room);
-
     if (numberOfUsersInRoom === 1) {
       io.to(newUser.room).emit("gameReady", "");
       io.to(newUser.room).emit("startGame", "");
     }
 
+    // io.to(newUser.room).emit("playerJoin", "");
     console.log(numberOfUsersInRoom);
     // io.to(newUser.room).emit("roomData", {
     //   room: newUser.room,
@@ -53,6 +53,10 @@ io.on("connection", (socket) => {
     if (user) io.to(user.room).emit("updateGameState", gameState);
   });
 
+  socket.on("test", () => {
+    console.log("TEST SUCCEEDED!");
+  });
+  
   // socket.on("sendMessage", (payload, callback) => {
   //   const user = getUser(socket.id);
   //   io.to(user.room).emit("message", {

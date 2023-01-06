@@ -13,9 +13,9 @@ const socket = io();
 
 socket.emit("joinRoom", code.roomCode);
 
-socket.on("gameReady", () => {
-  console.log("GAME READY!");
-});
+// socket.on("gameReady", () => {
+//   console.log("GAME READY!");
+// });
 
 socket.on("startGame", () => {
   window.location.pathname = "./gwent.html";

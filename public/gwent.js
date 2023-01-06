@@ -1,8 +1,22 @@
 "use strict";
 
-// var jsdom = require("jsdom");
-// var JSDOM = jsdom.JSDOM;
-// global.document = new JSDOM(html).window.document;
+var socket = io();
+var ui = new UI();
+var board = new Board();
+var weather = new Weather();
+var game = new Game();
+var player1, player2;
+var myTag;
+
+ui.enablePlayer(false);
+let dm = new DeckMaker();
+
+socket.on("playerJoin", () => {
+	console.log("New player joined");
+})
+
+// socket.emit("updateGameState", code.roomCode);
+
 
 class Controller {}
 
@@ -13,7 +27,7 @@ class Player {
     this.tag = id === 0 ? "player1" : "player2";
     this.controller = new Controller();
 
-    this.hand = new Hand(document.getElementById("hand-row"));
+    this.hand = new Hand(this.tag);
     this.grave = new Grave(document.getElementById("grave-" + this.tag));
     this.deck = new Deck(
       deck.faction,
@@ -384,8 +398,6 @@ class CardContainer {
 // Contians all used cards in the order that they were discarded
 class Grave extends CardContainer {
   constructor(elem) {
-	console.log("hi");
-	console.log(elem);
     super(elem);
     elem.addEventListener("click", () => ui.viewCardsInContainer(this), false);
   }
@@ -466,8 +478,12 @@ class Deck extends CardContainer {
 
   // Sends the top card to the passed hand
   async draw(hand) {
-    // if (hand === player2.hand) hand.addCard(this.removeCard(0));
-    // else await board.toHand(this.cards[0], this);
+    // if (hand === player2.hand) 
+	// 	hand.addCard(this.removeCard(0));
+    // else 
+	// 	await board.toHand(this.cards[0], this);
+
+	// if (hand !== player.hand) return;
 	await board.toHand(this.cards[0], this);
   }
 
@@ -511,7 +527,7 @@ class Deck extends CardContainer {
 }
 
 // Hand used by player2. Has an offscreen HTML element for card transitions.
-class HandPlayer2 extends CardContainer {
+class HandOpponent extends CardContainer {
   constructor() {
     super(undefined);
     this.counter = document.getElementById("hand-count-player2");
@@ -524,9 +540,9 @@ class HandPlayer2 extends CardContainer {
 
 // Hand used by current player
 class Hand extends CardContainer {
-  constructor(elem) {
-    super(elem);
-    this.counter = document.getElementById("hand-count-player1");
+  constructor(playerTag) {
+    super(document.getElementById("hand-row-" + playerTag));
+    this.counter = document.getElementById("hand-count-" + playerTag);
   }
 
   // Override
@@ -1006,8 +1022,8 @@ class Game {
     this.initPlayers(player1, player2);
     await Promise.all(
       [...Array(10).keys()].map(async () => {
-        await player1.deck.draw(player1.hand);
-        await player2.deck.draw(player2.hand);
+        await player1.deck.draw();
+        await player2.deck.draw();
       })
     );
 
@@ -1968,7 +1984,7 @@ class DeckMaker {
       .addEventListener("change", () => this.uploadDeck(), false);
     document
       .getElementById("start-game")
-      .addEventListener("click", () => this.startNewGame(), false);
+      .addEventListener("click", () => this.readyToStartNewGame(), false);
 
     this.update();
   }
@@ -2214,7 +2230,7 @@ class DeckMaker {
   }
 
   // Verifies current deck, creates the players and their decks, then starts a new game
-  startNewGame() {
+  readyToStartNewGame() {
     let warning = "";
     if (this.stats.units < 22)
       warning += "Your deck must have at least 22 unit cards. \n";
@@ -2437,7 +2453,7 @@ async function translateTo(card, container_source, container_dest) {
 
   // Returns the source container's element to transition from
   function getSourceElem(card, source, dest) {
-    if (source instanceof HandPlayer2) return source.hidden_elem;
+    // if (source instanceof HandOpponent) return source.hidden_elem;
     if (source instanceof Deck)
       return source.elem.children[source.elem.children.length - 2];
     return source.elem;
@@ -2445,7 +2461,7 @@ async function translateTo(card, container_source, container_dest) {
 
   // Returns the destination container's element to transition to
   function getDestinationElem(card, source, dest) {
-    if (dest instanceof HandPlayer2) return dest.hidden_elem;
+    // if (dest instanceof HandOpponent) return dest.hidden_elem;
     if (card.isSpecial() && dest instanceof Row) return dest.elem_special;
     if (
       dest instanceof Row ||
@@ -2511,6 +2527,8 @@ async function fade(fadeIn, elem, dur, delay) {
   }, dur / 24);
 }
 
+
+
 //      Get Image paths
 function iconURL(name, ext = "png") {
   return imgURL("icons/" + name, ext);
@@ -2562,14 +2580,6 @@ function sleepUntil(predicate, ms) {
 function onYouTubeIframeAPIReady() {
 //   ui.initYouTube();
 }
-
 /*----------------------------------------------------*/
 
-var ui = new UI();
-var board = new Board();
-var weather = new Weather();
-var game = new Game();
-var player1, player2;
 
-ui.enablePlayer(false);
-let dm = new DeckMaker();
