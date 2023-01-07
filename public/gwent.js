@@ -1,17 +1,23 @@
 "use strict";
 
 var socket = io();
+const roomCode = sessionStorage.getItem("roomCode");
 const playerNum = sessionStorage.getItem("playerNum");
 const playerId = parseInt(sessionStorage.getItem("playerId"));
-console.log(playerNum);
+// console.log(playerNum);
+
+
+// socket.join(roomCode);
+
 socket.on("playerJoin", () => {
   console.log("New player joined");
 });
-socket.on("AAA", () =>
-  console.log("Received AAA message from server"));
 // socket.emit("updateGameState", code.roomCode);
-socket.emit("In", playerId);
+socket.emit("playerRejoin", roomCode);
 
+socket.on("AAA", () => {
+	console.log("Received AAA message from server")
+});
 var playerTag = playerNum === 0 ? "player1" : "player2";
 
 class Controller {}
@@ -2276,8 +2282,8 @@ async handleServerMessage() {
     console.log("Waiting for player");
     this.elem.classList.add("hide");
     socket.emit("waitForPlayer", playerId);
-    // this.handleServerMessage();
-    console.log("Waiting for player done");
+    this.handleServerMessage();
+    // console.log("Waiting for player done");
     //   socket.on("allPlayersReady", () => {
     //   })
   }
@@ -2604,10 +2610,3 @@ var player1, player2;
 
 ui.enablePlayer(false);
 let dm = new DeckMaker();
-
-socket.on("allPlayersReady", (message) => {
-	console.log("ATTHEEND: Received allPlayersReady message from server:", message);
-  });
-
-socket.on("AAA", () =>
-  console.log("Received AAA message from server"));

@@ -6,7 +6,7 @@ const userJoin = ({ id, name, room }) => {
 
   const newUser = { id, name, room };
   users.push(newUser);
-  console.log(users);
+  // console.log(users);
   return { newUser };
 };
 
@@ -17,8 +17,8 @@ const userExit = (id) => {
 };
 
 const getUser = (id) => {
-  console.log(users);
-  console.log(id);
+  // console.log(users);
+  // console.log(id);
   return users.find((user) => user.id === id);
 };
 

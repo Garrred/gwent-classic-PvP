@@ -21,8 +21,9 @@ socket.emit("joinRoom", code.roomCode);
 socket.on("setId", ( id, num ) => {
   sessionStorage.setItem("playerId", id);
   sessionStorage.setItem("playerNum", num);
-  console.log("Player ID: " + id);
-  console.log("Player Number: " + num);
+  sessionStorage.setItem("roomCode", code.roomCode);
+  // console.log("Player ID: " + id);
+  // console.log("Player Number: " + num);
 })
 
 

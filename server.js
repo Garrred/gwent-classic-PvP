@@ -44,30 +44,24 @@ io.on("connection", (socket) => {
     // console.log("New player joined: " + playerId);
 
     socket.join(newUser.room);
+    console.log("Client joined room:", newUser.room);
     if (numberOfUsersInRoom === 1) {
       io.to(newUser.room).emit("startGame");
     }
 
     io.to(newUser.room).emit("playerJoin", "");
     console.log(numberOfUsersInRoom);
-    // io.to(newUser.room).emit("roomData", {
-    //   room: newUser.room,
-    //   users: getUsersInRoom(newUser.room),
-    // });
   });
 
-  socket.on("In", (id) => {
-    console.log("In: " + id);
+  socket.on("playerRejoin", (roomCode) => {
+    socket.join(roomCode);
+    io.to(roomCode).emit("AAA");
   });
   socket.on("waitForPlayer", (id) => {
     try {
       console.log("Waiting for player...: " + id);
       // send "PlayerReady" to room if both players are ready
       const user = getUser(id);
-      // console.log(socket.id);
-      getAllUsers();
-
-      console.log(typeof id);
 
       if (user) {
         console.log("Player ready!");
@@ -76,7 +70,6 @@ io.on("connection", (socket) => {
         }
         if (++readyCounts[user.room] === 2) {
           io.to(user.room).emit("allPlayersReady", "ha");
-          io.to(user.room).emit("AAA", "ha");
           console.log("All players ready!");
         }
       }
