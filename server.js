@@ -18,7 +18,8 @@ const server = http.createServer(app);
 const io = socketio(server);
 
 var players = {};
-var readyCounts = {};
+// var readyCounts = {};
+var roomInfo = {};
 
 app.use(express.static(path.join(__dirname, "public")));
 // app.use(cors());
@@ -54,29 +55,50 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playerRejoin", (roomCode) => {
+    roomInfo[roomCode] = {
+      readyCounts: 0,
+      nilfgaardSpecial: 0,
+      scoiataelSpecial: 0,
+    };
     socket.join(roomCode);
     io.to(roomCode).emit("AAA");
   });
-  socket.on("waitForPlayer", (id) => {
-    try {
-      console.log("Waiting for player...: " + id);
-      // send "PlayerReady" to room if both players are ready
-      const user = getUser(id);
+  socket.on(
+    "waitForPlayerAndCheckSpecial",
+    (id, checkNilfgaard, checkScoiatael) => {
+      try {
+        console.log("Waiting for player...: " + id);
+        // send "PlayerReady" to room if both players are ready
+        const user = getUser(id);
 
-      if (user) {
-        console.log("Player ready!");
-        if (!readyCounts[user.room]) {
-          readyCounts[user.room] = 0;
+        if (user) {
+          console.log("Player ready!");
+
+          if (checkNilfgaard) {
+            roomInfo[user.room].nilfgaardSpecial++;
+          }
+          if (checkScoiatael) {
+            roomInfo[user.room].scoiataelSpecial++;
+          }
+
+          // if (!readyCounts[user.room]) {
+          //   readyCounts[user.room] = 0;
+          // }
+          // if (++readyCounts[user.room] === 2) {
+          if (++roomInfo[user.room].readyCounts === 2) {
+            io.to(user.room).emit(
+              "allPlayersReady",
+              roomInfo[user.room].nilfgaardSpecial > 0,
+              roomInfo[user.room].scoiataelSpecial > 1
+            );
+            console.log("All players ready!");
+          }
         }
-        if (++readyCounts[user.room] === 2) {
-          io.to(user.room).emit("allPlayersReady", "ha");
-          console.log("All players ready!");
-        }
+      } catch (error) {
+        console.error("Error while handling waitForPlayer message:", error);
       }
-    } catch (error) {
-      console.error("Error while handling waitForPlayer message:", error);
     }
-  });
+  );
 
   socket.on("initGameState", (gameState) => {
     const user = getUser(socket.id);

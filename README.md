@@ -4,3 +4,6 @@
 Known BUGS:
 [ ] Cannot start if any player refresh the page.
 [ ] Users still occupies room after they disconnect.
+[ ] User join & exit consistency, including re-join.
+[ ] Server side infomation updates upon restart game.
+[ ] Nilf & Soc's Leader & faction special abilities haven't been tested.

@@ -6,7 +6,6 @@ const playerNum = sessionStorage.getItem("playerNum");
 const playerId = parseInt(sessionStorage.getItem("playerId"));
 // console.log(playerNum);
 
-
 // socket.join(roomCode);
 
 socket.on("playerJoin", () => {
@@ -16,7 +15,7 @@ socket.on("playerJoin", () => {
 socket.emit("playerRejoin", roomCode);
 
 socket.on("AAA", () => {
-	console.log("Received AAA message from server")
+  console.log("Received AAA message from server");
 });
 var playerTag = playerNum === 0 ? "player1" : "player2";
 
@@ -983,9 +982,8 @@ class Game {
   }
 
   // Sets up player faction abilities and psasive leader abilities
-  initPlayers(p1, p2) {
-    let l1 = ability_dict[p1.leader.abilities[0]];
-    let l2 = ability_dict[p2.leader.abilities[0]];
+  initPlayers(player) {
+    let l1 = ability_dict[player.leader.abilities[0]];
     if (
       l1 === ability_dict["emhyr_whiteflame"] ||
       l2 === ability_dict["emhyr_whiteflame"]
@@ -993,7 +991,7 @@ class Game {
       p1.disableLeader();
       p2.disableLeader();
     } else {
-      initLeader(p1, l1);
+      initLeader(player, l1);
       initLeader(p2, l2);
     }
     if (p1.deck.faction === p2.deck.faction && p1.deck.faction === "scoiatael")
@@ -1018,13 +1016,12 @@ class Game {
   }
 
   // Sets initializes player abilities, player hands and redraw
-  async startGame() {
+  async startGame(cancelLeader, tossCoin) {
     ui.toggleMusic_elem.classList.remove("music-customization");
     this.initPlayers(player1, player2);
     await Promise.all(
       [...Array(10).keys()].map(async () => {
         await player1.deck.draw();
-        await player2.deck.draw();
       })
     );
 
@@ -2229,37 +2226,49 @@ class DeckMaker {
     this.deck = [];
     this.stats = {};
   }
-//   waitForServerMessage() {
-//     return new Promise((resolve) => {
-//       socket.on("allPlayersReady", (message) => {
-//         resolve(message);
-//       });
-//     });
-//   }
+  //   waitForServerMessage() {
+  //     return new Promise((resolve) => {
+  //       socket.on("allPlayersReady", (message) => {
+  //         resolve(message);
+  //       });
+  //     });
+  //   }
 
-//   async handleServerMessage() {
-// 	try {
-// 		const message = await this.waitForServerMessage();
-// 		console.log('Received message from server:', message);
-// 		game.startGame();
-// 	  } catch (error) {
-// 		console.error('Error while waiting for server message:', error);
-// 	  }
-//     // const message = await this.waitForServerMessage();
-//     // console.log("Received message from server:", message);
-//   }
-async handleServerMessage() {
-	try {
-	  await new Promise((resolve) => {
-		socket.on("allPlayersReady", (message) => {
-		  resolve(message);
-		});
-	  });
-	  console.log("Received allPlayersReady message from server!");
-	  game.startGame();
-	} catch (error) {
-	  console.error('Error while waiting for server message:', error);
-	}
+  //   async handleServerMessage() {
+  // 	try {
+  // 		const message = await this.waitForServerMessage();
+  // 		console.log('Received message from server:', message);
+  // 		game.startGame();
+  // 	  } catch (error) {
+  // 		console.error('Error while waiting for server message:', error);
+  // 	  }
+  //     // const message = await this.waitForServerMessage();
+  //     // console.log("Received message from server:", message);
+  //   }
+  async handleServerMessage() {
+    try {
+      await new Promise((resolve) => {
+        socket.on("allPlayersReady", (nilfgaardMet, scoiataelMet) => {
+          console.log(nilfgaardMet, scoiataelMet);
+          resolve();
+        });
+      });
+      console.log("Received allPlayersReady message from server!");
+      game.startGame();
+    } catch (error) {
+      console.error("Error while waiting for server message:", error);
+    }
+  }
+
+  checkNilfgaard(player) {
+    return (
+      ability_dict[player.leader.abilities[0]] ===
+      ability_dict["emhyr_whiteflame"]
+    );
+  }
+
+  checkScoiatael(player) {
+    return player.deck.faction == "scoiatael";
   }
 
   // Verifies current deck, creates the players and their decks, then starts a new game
@@ -2281,7 +2290,12 @@ async handleServerMessage() {
 
     console.log("Waiting for player");
     this.elem.classList.add("hide");
-    socket.emit("waitForPlayer", playerId);
+    socket.emit(
+      "waitForPlayerAndCheckSpecial",
+      playerId,
+      this.checkNilfgaard(player1),
+      this.checkScoiatael(player1)
+    );
     this.handleServerMessage();
     // console.log("Waiting for player done");
     //   socket.on("allPlayersReady", () => {
@@ -2362,7 +2376,7 @@ async handleServerMessage() {
             "'" +
             card.name +
             "' cannot be used in a deck of faction type '" +
-            deck.faciton +
+            deck.faction +
             "'\n";
           return false;
         }
@@ -2606,7 +2620,7 @@ var ui = new UI();
 var board = new Board();
 var weather = new Weather();
 var game = new Game();
-var player1, player2;
+var player1;
 
 ui.enablePlayer(false);
 let dm = new DeckMaker();
