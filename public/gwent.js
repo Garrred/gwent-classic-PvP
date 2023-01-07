@@ -982,22 +982,17 @@ class Game {
   }
 
   // Sets up player faction abilities and psasive leader abilities
-  initPlayers(player) {
+  initPlayers(player, cancelLeader, tossCoin) {
     let l1 = ability_dict[player.leader.abilities[0]];
-    if (
-      l1 === ability_dict["emhyr_whiteflame"] ||
-      l2 === ability_dict["emhyr_whiteflame"]
-    ) {
-      p1.disableLeader();
-      p2.disableLeader();
+    if (cancelLeader) {
+      // TODO: DISABLE LEADER AND UPDATE UI
+      player.disableLeader();
     } else {
       initLeader(player, l1);
-      initLeader(p2, l2);
     }
-    if (p1.deck.faction === p2.deck.faction && p1.deck.faction === "scoiatael")
+    if (tossCoin)
       return;
-    initFaction(p1);
-    initFaction(p2);
+    initFaction(player);
 
     function initLeader(player, leader) {
       if (leader.placed) leader.placed(player.leader);
@@ -1017,8 +1012,9 @@ class Game {
 
   // Sets initializes player abilities, player hands and redraw
   async startGame(cancelLeader, tossCoin) {
+    console.log(cancelLeader, tossCoin);
     ui.toggleMusic_elem.classList.remove("music-customization");
-    this.initPlayers(player1, player2);
+    this.initPlayers(player1, cancelLeader, tossCoin);
     await Promise.all(
       [...Array(10).keys()].map(async () => {
         await player1.deck.draw();
@@ -2247,14 +2243,28 @@ class DeckMaker {
   //   }
   async handleServerMessage() {
     try {
+      // let nilfgaardMet = false;
+      // let scoiataelMet = false;
       await new Promise((resolve) => {
         socket.on("allPlayersReady", (nilfgaardMet, scoiataelMet) => {
-          console.log(nilfgaardMet, scoiataelMet);
+          // this.nilfgaardMet = nilfgaardMet;
+          // this.scoiataelMet = scoiataelMet;
+          // console.log(nilfgaardMet, scoiataelMet);
+          // if (nilfgaardMet) {
+          //   player1.disableLeader();
+          // }
+          // else {
+          //   initLeader(player1, ability_dict[player1.leader.abilities[0]]);
+          // }
+          // if (scoiataelMet) {}
+
           resolve();
+          console.log("Received allPlayersReady message from server!");
+          game.startGame(nilfgaardMet, scoiataelMet);
+
         });
+        
       });
-      console.log("Received allPlayersReady message from server!");
-      game.startGame();
     } catch (error) {
       console.error("Error while waiting for server message:", error);
     }
@@ -2417,9 +2427,10 @@ class DeckMaker {
 // Translates a card between two containers
 async function translateTo(card, container_source, container_dest) {
   if (!container_dest || !container_source) return;
-  if (container_dest === player2.hand && container_source === player2.deck)
+  // if (container_dest === player2.hand && container_source === player2.deck)
+  //   return;
+  if (container_dest !== player1.hand && container_source !== player1.deck)
     return;
-
   let elem = card.elem;
   let source = !container_source
     ? card.elem

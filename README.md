@@ -7,3 +7,4 @@ Known BUGS:
 [ ] User join & exit consistency, including re-join.
 [ ] Server side infomation updates upon restart game.
 [ ] Nilf & Soc's Leader & faction special abilities haven't been tested.
+[ ] Nilf Leader UI updates on both clients.
