@@ -2,7 +2,7 @@
 
 var socket = io();
 const roomCode = sessionStorage.getItem("roomCode");
-const playerNum = sessionStorage.getItem("playerNum");
+const playerNum = parseInt(sessionStorage.getItem("playerNum"));
 const playerId = parseInt(sessionStorage.getItem("playerId"));
 // console.log(playerNum);
 
@@ -17,7 +17,8 @@ socket.emit("playerRejoin", roomCode);
 socket.on("AAA", () => {
   console.log("Received AAA message from server");
 });
-var playerTag = playerNum === 0 ? "player1" : "player2";
+// var playerTag = playerNum === 0 ? "player1" : "player2";
+var playerTag = "player1";
 
 class Controller {}
 
@@ -1011,7 +1012,7 @@ class Game {
   }
 
   // Sets initializes player abilities, player hands and redraw
-  async startGame(cancelLeader, tossCoin) {
+  async startGame(cancelLeader, tossCoin, firstPlayerNum) {
     console.log(cancelLeader, tossCoin);
     ui.toggleMusic_elem.classList.remove("music-customization");
     this.initPlayers(player1, cancelLeader, tossCoin);
@@ -1022,14 +1023,18 @@ class Game {
     );
 
     await this.runEffects(this.gameStart);
-    if (!this.firstPlayer) this.firstPlayer = await this.coinToss();
+
+    // if (!this.firstPlayer) this.firstPlayer = await this.coinToss();
+    if (firstPlayerNum !== null) this.firstPlayer = (firstPlayerNum === playerNum ? "player" : "opponent");
+    console.log(this.firstPlayer);
+
     this.initialRedraw();
   }
 
   // Simulated coin toss to determine who starts game
   async coinToss() {
     this.firstPlayer = Math.random() < 0.5 ? player1 : player2;
-    await ui.notification(this.firstPlayer.tag + "-coin", 1200);
+    // await ui.notification(playerTag + "-coin", 1200);
     return this.firstPlayer;
   }
 
@@ -1614,17 +1619,17 @@ class UI {
     bQuit,
     title
   ) {
-    if (game.currPlayer === player2) {
-      if (player2.controller instanceof ControllerAI)
-        for (let i = 0; i < count; ++i) {
-          let cards = container.cards.reduce(
-            (a, c, i) => (!predicate || predicate(c) ? a.concat([i]) : a),
-            []
-          );
-          await action(container, cards[randomInt(cards.length)]);
-        }
-      return;
-    }
+    // if (game.currPlayer === player2) {
+    //   if (player2.controller instanceof ControllerAI)
+    //     for (let i = 0; i < count; ++i) {
+    //       let cards = container.cards.reduce(
+    //         (a, c, i) => (!predicate || predicate(c) ? a.concat([i]) : a),
+    //         []
+    //       );
+    //       await action(container, cards[randomInt(cards.length)]);
+    //     }
+    //   return;
+    // }
     let carousel = new Carousel(
       container,
       count,
@@ -2246,7 +2251,7 @@ class DeckMaker {
       // let nilfgaardMet = false;
       // let scoiataelMet = false;
       await new Promise((resolve) => {
-        socket.on("allPlayersReady", (nilfgaardMet, scoiataelMet) => {
+        socket.on("allPlayersReady", (nilfgaardMet, scoiataelMet, firstPlayerNum) => {
           // this.nilfgaardMet = nilfgaardMet;
           // this.scoiataelMet = scoiataelMet;
           // console.log(nilfgaardMet, scoiataelMet);
@@ -2260,7 +2265,7 @@ class DeckMaker {
 
           resolve();
           console.log("Received allPlayersReady message from server!");
-          game.startGame(nilfgaardMet, scoiataelMet);
+          game.startGame(nilfgaardMet, scoiataelMet, firstPlayerNum);
 
         });
         

@@ -55,11 +55,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("playerRejoin", (roomCode) => {
+    if (!roomInfo[roomCode]) {
     roomInfo[roomCode] = {
       readyCounts: 0,
       nilfgaardSpecial: 0,
       scoiataelSpecial: 0,
+      firstPlayerNum: 0,
     };
+  }
     socket.join(roomCode);
     io.to(roomCode).emit("AAA");
   });
@@ -85,11 +88,14 @@ io.on("connection", (socket) => {
           //   readyCounts[user.room] = 0;
           // }
           // if (++readyCounts[user.room] === 2) {
+
+          roomInfo[user.room].firstPlayerNum = Math.floor(Math.random() * 2);
           if (++roomInfo[user.room].readyCounts === 2) {
             io.to(user.room).emit(
               "allPlayersReady",
               roomInfo[user.room].nilfgaardSpecial > 0,
-              roomInfo[user.room].scoiataelSpecial > 1
+              roomInfo[user.room].scoiataelSpecial !== 1,
+              roomInfo[user.room].scoiataelSpecial === 1 ? null : roomInfo[user.room].firstPlayerNum
             );
             console.log("All players ready!");
           }
@@ -99,6 +105,9 @@ io.on("connection", (socket) => {
       }
     }
   );
+
+  socket.on("setFirstPlayer", (id, firstPlayerNum) => {
+  });
 
   socket.on("initGameState", (gameState) => {
     const user = getUser(socket.id);
