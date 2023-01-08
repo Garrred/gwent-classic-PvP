@@ -106,8 +106,15 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("setFirstPlayer", (id, firstPlayerNum) => {
+  // TODO: handle round end and pass (both in startRound and startTurn)
+
+  socket.on("finishedMove", (id) => {
+    const user = getUser(id);
+    if (user) io.to(user.room).emit("updateGame");
   });
+
+  // socket.on("", (id) => {
+
 
   socket.on("initGameState", (gameState) => {
     const user = getUser(socket.id);

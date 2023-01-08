@@ -11,3 +11,9 @@ Known BUGS:
 [ ] Leader selection fix.
 [ ] Soc faction ability implementation.
 [ ] First player UI notification.
+[ ] Player can place cards while opponent is redrawing at the beginning.
+[ ] Round & turn UI notification.
+[ ] Control flow upon round pass.
+[ ] Set winning.
+[ ] First player reversed.
+[ ] Event listeners remains open.

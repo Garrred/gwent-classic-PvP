@@ -76,7 +76,7 @@ class Player {
 
   // Returns the opponent Player
   opponent() {
-    return board.opponent(this);
+    // return board.opponent(this);
   }
 
   // Updates the player's total score and notifies the gamee
@@ -941,14 +941,17 @@ class Board {
 
   // Updates which player currently is in the lead
   updateLeader() {
-    let dif = player1.total - player2.total;
-    player1.setWinning(dif > 0);
-    player2.setWinning(dif < 0);
+    // let dif = player1.total - player2.total;
+    // player1.setWinning(dif > 0);
+    // player2.setWinning(dif < 0);
   }
 }
 
 class Game {
   constructor() {
+    socket.on("updateGame", () => {
+      this.startTurn();
+    });
     this.endScreen = document.getElementById("end-screen");
     let buttons = this.endScreen.getElementsByTagName("button");
     this.customize_elem = buttons[0];
@@ -1025,18 +1028,20 @@ class Game {
     await this.runEffects(this.gameStart);
 
     // if (!this.firstPlayer) this.firstPlayer = await this.coinToss();
-    if (firstPlayerNum !== null) this.firstPlayer = (firstPlayerNum === playerNum ? "player" : "opponent");
+    
+    // 1 stands for self first, 0 stands for opponent first
+    if (firstPlayerNum !== null) this.firstPlayer = firstPlayerNum;
     console.log(this.firstPlayer);
 
     this.initialRedraw();
   }
 
   // Simulated coin toss to determine who starts game
-  async coinToss() {
-    this.firstPlayer = Math.random() < 0.5 ? player1 : player2;
-    // await ui.notification(playerTag + "-coin", 1200);
-    return this.firstPlayer;
-  }
+  // async coinToss() {
+  //   this.firstPlayer = Math.random() < 0.5 ? player1 : player2;
+  //   // await ui.notification(playerTag + "-coin", 1200);
+  //   return this.firstPlayer;
+  // }
 
   // Allows the player to swap out up to two cards from their iniitial hand
   async initialRedraw() {
@@ -1057,22 +1062,28 @@ class Game {
   // Initiates a new round of the game
   async startRound() {
     this.roundCount++;
-    this.currPlayer =
-      this.roundCount % 2 === 0
-        ? this.firstPlayer
-        : this.firstPlayer.opponent();
+    // TODO: switch first player every round
+
+    // change 0 to 1 or 1 to 0
+
+    this.currPlayer = this.roundCount % 2 === 0 ? this.opponent(this.firstPlayer) : this.firstPlayer;
+
+    // this.currPlayer =
+    //   this.roundCount % 2 === 0
+    //     ? this.firstPlayer
+    //     : this.firstPlayer.opponent();
     await this.runEffects(this.roundStart);
 
     if (!player1.canPlay()) player1.setPassed(true);
-    if (!player2.canPlay()) player2.setPassed(true);
+    // if (!player2.canPlay()) player2.setPassed(true);
 
-    if (player2.passed && player1.passed) return this.endRound();
+    // if (player2.passed && player1.passed) return this.endRound();
 
-    if (this.currPlayer.passed) this.currPlayer = this.currPlayer.opponent();
+    // if (this.currPlayer.passed) this.currPlayer = this.currPlayer.opponent();
 
     await ui.notification("round-start", 1200);
-    if (this.currPlayer.opponent().passed)
-      await ui.notification(this.currPlayer.tag + "-turn", 1200);
+    // if (this.currPlayer.opponent().passed)
+    //   await ui.notification(this.currPlayer.tag + "-turn", 1200);
 
     this.startTurn();
   }
@@ -1080,22 +1091,46 @@ class Game {
   // Starts a new turn. Enables client interraction in client's turn.
   async startTurn() {
     await this.runEffects(this.turnStart);
-    if (!this.currPlayer.opponent().passed) {
-      this.currPlayer = this.currPlayer.opponent();
-      await ui.notification(this.currPlayer.tag + "-turn", 1200);
+    this.currPlayer = this.opponent(this.currPlayer);
+    // if (!this.currPlayer.opponent().passed) {
+      // this.currPlayer = this.opponent(this.currPlayer);
+      // let curTag = 
+      // await ui.notification(this.currPlayer.tag + "-turn", 1200);
+    // }
+
+    ui.enablePlayer(this.isMyTurn());
+    
+    console.log(this.isMyTurn());
+    if (this.isMyTurn()) {
+      player1.startTurn();
     }
-    ui.enablePlayer(this.currPlayer === player1);
-    this.currPlayer.startTurn();
+    else {
+      // await new Promise((resolve) => {
+      //   socket.on("updateGame", () => {
+      //     console.log("update game");
+      //     this.startTurn();
+      //     resolve();
+      //   });
+      // });
+    }
   }
 
   // Ends the current turn and may end round. Disables client interraction in client's turn.
   async endTurn() {
-    if (this.currPlayer === player1) ui.enablePlayer(false);
+    if (this.isMyTurn()) ui.enablePlayer(false);
     await this.runEffects(this.turnEnd);
-    if (this.currPlayer.passed)
-      await ui.notification(this.currPlayer.tag + "-pass", 1200);
-    if (player2.passed && player1.passed) this.endRound();
-    else this.startTurn();
+    // if (this.currPlayer.passed)
+    //   await ui.notification(this.currPlayer.tag + "-pass", 1200);
+    // if (player2.passed && player1.passed) this.endRound();
+    // else this.startTurn();
+    socket.emit("finishedMove", playerId);
+    // await new Promise((resolve) => {
+    //   socket.on("updateGame", () => {
+    //     resolve();
+    //     this.startTurn();
+    //   });
+    // });
+
   }
 
   // Ends the round and may end the game. Determines final scores and the round winner.
@@ -1187,6 +1222,15 @@ class Game {
       let effect = effects[i];
       if (await effect()) effects.splice(i, 1);
     }
+  }
+
+  opponent(num) {
+    return num === 0 ? 1 : 0;
+    // return board.opponent(this);
+  }
+
+  isMyTurn() {
+    return this.currPlayer === playerNum;
   }
 }
 
