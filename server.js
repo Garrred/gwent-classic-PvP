@@ -111,6 +111,11 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("passRound", (id) => {    
+    const user = getUser(id);
+    if (user) io.to(user.room).emit("passRound");
+  });
+
   socket.on("finishedMove", (id) => {
     const user = getUser(id);
     if (user) io.to(user.room).emit("updateGame");

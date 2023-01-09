@@ -32,6 +32,10 @@ socket.on("updateHand", (serverSidePlayer1_cardNames, serverSidePlayer2_cardName
 	game.startRound();
 });
 
+socket.on("passRound", () => {
+	game.currPlayer.passRound();
+});
+
 class Controller {}
 
 // Can make actions during turns like playing cards that it owns
@@ -130,6 +134,9 @@ class Player {
 		// if (this.controller instanceof ControllerAI) {
 		// 	await this.controller.startTurn(this);
 		// }
+	}
+	signalToPassRound() {
+		socket.emit("passRound", playerServerId);
 	}
 	
 	// Passes the round and ends the turn
@@ -1303,7 +1310,7 @@ class UI {
 		this.preview = document.getElementsByClassName("card-preview")[0];
 		this.previewCard = null;
 		this.lastRow = null;
-		document.getElementById("pass-button").addEventListener("click", () => player1.passRound(), false);
+		document.getElementById("pass-button").addEventListener("click", () => player1.signalToPassRound(), false);
 		document.getElementById("click-background").addEventListener("click", () => ui.cancel(), false);
 		this.youtube;
 		this.ytActive;
