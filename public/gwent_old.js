@@ -1004,8 +1004,7 @@ class Game {
     } else {
       initLeader(player, l1);
     }
-    if (tossCoin)
-      return;
+    if (tossCoin) return;
     initFaction(player);
 
     function initLeader(player, leader) {
@@ -1038,7 +1037,7 @@ class Game {
     await this.runEffects(this.gameStart);
 
     // if (!this.firstPlayer) this.firstPlayer = await this.coinToss();
-    
+
     // 1 stands for self first, 0 stands for opponent first
     if (firstPlayerNum !== null) this.firstPlayer = firstPlayerNum;
     console.log(this.firstPlayer);
@@ -1076,7 +1075,10 @@ class Game {
 
     // change 0 to 1 or 1 to 0
 
-    this.currPlayer = this.roundCount % 2 === 0 ? this.opponent(this.firstPlayer) : this.firstPlayer;
+    this.currPlayer =
+      this.roundCount % 2 === 0
+        ? this.opponent(this.firstPlayer)
+        : this.firstPlayer;
 
     // this.currPlayer =
     //   this.roundCount % 2 === 0
@@ -1103,18 +1105,17 @@ class Game {
     await this.runEffects(this.turnStart);
     this.currPlayer = this.opponent(this.currPlayer);
     // if (!this.currPlayer.opponent().passed) {
-      // this.currPlayer = this.opponent(this.currPlayer);
-      // let curTag = 
-      // await ui.notification(this.currPlayer.tag + "-turn", 1200);
+    // this.currPlayer = this.opponent(this.currPlayer);
+    // let curTag =
+    // await ui.notification(this.currPlayer.tag + "-turn", 1200);
     // }
 
     ui.enablePlayer(this.isMyTurn());
-    
+
     console.log(this.isMyTurn());
     if (this.isMyTurn()) {
       player1.startTurn();
-    }
-    else {
+    } else {
       // await new Promise((resolve) => {
       //   socket.on("updateGame", () => {
       //     console.log("update game");
@@ -1133,14 +1134,13 @@ class Game {
     //   await ui.notification(this.currPlayer.tag + "-pass", 1200);
     // if (player2.passed && player1.passed) this.endRound();
     // else this.startTurn();
-    socket.emit("finishedMove", playerId, );
+    socket.emit("finishedMove", playerId);
     // await new Promise((resolve) => {
     //   socket.on("updateGame", () => {
     //     resolve();
     //     this.startTurn();
     //   });
     // });
-
   }
 
   // Ends the round and may end the game. Determines final scores and the round winner.
@@ -2311,24 +2311,25 @@ class DeckMaker {
       // let nilfgaardMet = false;
       // let scoiataelMet = false;
       await new Promise((resolve) => {
-        socket.on("allPlayersReady", (nilfgaardMet, scoiataelMet, firstPlayerNum) => {
-          // this.nilfgaardMet = nilfgaardMet;
-          // this.scoiataelMet = scoiataelMet;
-          // console.log(nilfgaardMet, scoiataelMet);
-          // if (nilfgaardMet) {
-          //   player1.disableLeader();
-          // }
-          // else {
-          //   initLeader(player1, ability_dict[player1.leader.abilities[0]]);
-          // }
-          // if (scoiataelMet) {}
+        socket.on(
+          "allPlayersReady",
+          (nilfgaardMet, scoiataelMet, firstPlayerNum) => {
+            // this.nilfgaardMet = nilfgaardMet;
+            // this.scoiataelMet = scoiataelMet;
+            // console.log(nilfgaardMet, scoiataelMet);
+            // if (nilfgaardMet) {
+            //   player1.disableLeader();
+            // }
+            // else {
+            //   initLeader(player1, ability_dict[player1.leader.abilities[0]]);
+            // }
+            // if (scoiataelMet) {}
 
-          resolve();
-          console.log("Received allPlayersReady message from server!");
-          game.startGame(nilfgaardMet, scoiataelMet, firstPlayerNum);
-
-        });
-        
+            resolve();
+            console.log("Received allPlayersReady message from server!");
+            game.startGame(nilfgaardMet, scoiataelMet, firstPlayerNum);
+          }
+        );
       });
     } catch (error) {
       console.error("Error while waiting for server message:", error);

@@ -17,3 +17,4 @@ Known BUGS:
 [ ] Set winning.
 [ ] First player reversed.
 [ ] Event listeners remains open.
+[ ] Data transmitted is too large.

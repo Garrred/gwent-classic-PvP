@@ -65,7 +65,7 @@ html {
 	z-index: 1;
 }
 
-#hand-op {
+#hand-player2 {
 	position:absolute;
 	height: 6.35vw;
 	width: 4.45vw;
@@ -75,7 +75,7 @@ html {
 	border: 1px solid blue;
 }
 
-#hand-op .card { position : absolute; }
+#hand-player2 .card { position : absolute; }
 
 /* ----------- media player ------------------ */
 
@@ -137,23 +137,23 @@ html {
 	align-items: center;
 }
 
-#notif-me-first::after { content:"You will go first"; }
-#notif-op-first::after { content:"Your opponent will go first"; }
+#notif-player1-first::after { content:"You will go first"; }
+#notif-player2-first::after { content:"Your opponent will go first"; }
 
-#notif-me-coin { background-image: url('img/icons/notif_me_coin.png'); }
-#notif-me-coin::after { content:"You will go first"; }
+#notif-player1-coin { background-image: url('img/icons/notif_me_coin.png'); }
+#notif-player1-coin::after { content:"You will go first"; }
 
-#notif-op-coin { background-image: url('img/icons/notif_op_coin.png'); }
-#notif-op-coin::after { content:"Your opponent will go first"; }
+#notif-player2-coin { background-image: url('img/icons/notif_op_coin.png'); }
+#notif-player2-coin::after { content:"Your opponent will go first"; }
 
 #notif-round-start { background-image: url('img/icons/notif_round_start.png'); }
 #notif-round-start::after { content:"Round Start"; }
 
-#notif-me-pass { background-image: url('img/icons/notif_round_passed.png'); }
-#notif-me-pass::after { content:"Round passed"; }
+#notif-player1-pass { background-image: url('img/icons/notif_round_passed.png'); }
+#notif-player1-pass::after { content:"Round passed"; }
 
-#notif-op-pass { background-image: url('img/icons/notif_round_passed.png'); }
-#notif-op-pass::after { content:"Your opponent has passed"; }
+#notif-player2-pass { background-image: url('img/icons/notif_round_passed.png'); }
+#notif-player2-pass::after { content:"Your opponent has passed"; }
 
 #notif-win-round { background-image: url('img/icons/notif_win_round.png'); } 
 #notif-win-round::after { content:"You won the round!"; }
@@ -164,11 +164,11 @@ html {
 #notif-draw-round { background-image: url('img/icons/notif_draw_round.png'); }
 #notif-draw-round::after {content:"The round ended in a draw"; }
 
-#notif-me-turn { background-image: url('img/icons/notif_me_turn.png'); } 
-#notif-me-turn::after { content:"Your turn!"; }
+#notif-player1-turn { background-image: url('img/icons/notif_me_turn.png'); } 
+#notif-player1-turn::after { content:"Your turn!"; }
 
-#notif-op-turn { background-image: url('img/icons/notif_op_turn.png'); }
-#notif-op-turn::after { content:"Opponent's turn"; }
+#notif-player2-turn { background-image: url('img/icons/notif_op_turn.png'); }
+#notif-player2-turn::after { content:"Opponent's turn"; }
 
 #notif-north { background-image: url('img/icons/notif_north.png'); }
 #notif-north::after { content:"Northern Realms faction ability triggered - North draws an additional card."; }
@@ -179,11 +179,11 @@ html {
 #notif-scoiatael { background-image: url('img/icons/notif_scoiatael.png'); }
 #notif-scoiatael::after { content: "Opponent used the Scoia'tael faction perk to go first."; }
 
-#notif-skellige-op{ background-image: url('img/icons/notif_skellige.png'); }
-#notif-skellige-op::after { content: "Opponent Skellige Ability Triggered!"; }
+#notif-skellige-player2{ background-image: url('img/icons/notif_skellige.png'); }
+#notif-skellige-player2::after { content: "Opponent Skellige Ability Triggered!"; }
 
-#notif-skellige-me{ background-image: url('img/icons/notif_skellige.png'); }
-#notif-skellige-me::after { content: "Skellige Ability Triggered!"; }
+#notif-skellige-player1{ background-image: url('img/icons/notif_skellige.png'); }
+#notif-skellige-player1::after { content: "Skellige Ability Triggered!"; }
 
 /* ------- card preview ------------- */
 
@@ -583,11 +583,11 @@ main { background-image: url('img/boardtest8.png'); }
 	height: 100%;
 }
 
-#leader-op {
+#leader-player2 {
 	top: 7.55%;
 }
 
-#leader-me {
+#leader-player1 {
 	top: 77.5%;
 }
 
@@ -602,11 +602,11 @@ main { background-image: url('img/boardtest8.png'); }
 	box-shadow: -3vw 0px 1vw 0.1vw goldenrod;
 }
 
-#stats-op {
+#stats-player2 {
 	top: 24.25%;
 }
 
-#stats-me {
+#stats-player1 {
 	top: 61.75%;
 }
 
@@ -648,7 +648,7 @@ main { background-image: url('img/boardtest8.png'); }
 	background-position: center;
 }
 
-#stats-me > div > div > div {
+#stats-player1 > div > div > div {
 	top: 59%;
 }
 
@@ -672,11 +672,11 @@ main { background-image: url('img/boardtest8.png'); }
 	background-position: center;
 }
 
-#score-total-me {
+#score-total-player1 {
 	background-image: url('img/icons/score_total_me.png');
 }
 
-#score-total-op {
+#score-total-player2 {
 	background-image: url('img/icons/score_total_op.png');
 }
 
@@ -713,7 +713,7 @@ main { background-image: url('img/boardtest8.png'); }
 	
 }
 
-#hand-count-me {
+#hand-count-player1 {
 	top:18.5%;
 }
 
@@ -728,22 +728,22 @@ main { background-image: url('img/boardtest8.png'); }
 	background-image: url('img/icons/icon_gem_on.png');
 }
 
-#gem2-op {
+#gem2-player2 {
 	top: 56.25%;
 	left: 70.75%;
 }
 
-#gem1-op{
+#gem1-player2{
 	top:56%;
 	left:80%;
 }
 
-#gem2-me {
+#gem2-player1 {
 	top: 14.5%;
 	left: 70.75%;
 }
 
-#gem1-me{
+#gem1-player1{
 	top: 14.5%;
 	left: 80%;
 }
@@ -762,7 +762,7 @@ main { background-image: url('img/boardtest8.png'); }
 	/*font-family: Arial Narrow, sans-serif;*/
 }
 
-#name-me {
+#name-player1 {
 	top: 60%;
 }
 
@@ -780,7 +780,7 @@ main { background-image: url('img/boardtest8.png'); }
 	/*font-family: Arial Narrow, sans-serif;*/
 }
 
-#deck-name-me {
+#deck-name-player1 {
 	top:80%;
 }
 
@@ -795,7 +795,7 @@ main { background-image: url('img/boardtest8.png'); }
 	font-weight: bold;
 	text-shadow: 1px 1px 2px black;
 }
-#passed-me{ top: -3%;}
+#passed-player1{ top: -3%;}
 
 #pass-button {
 	top: 82%;
@@ -822,15 +822,15 @@ main { background-image: url('img/boardtest8.png'); }
 	pointer-events: none;
 }
 
-#field-op {
+#field-player2 {
 	top:-1.1%;
 }
 
-#field-op .card {
+#field-player2 .card {
 	pointer-events: none;
 }
 
-#field-me {
+#field-player1 {
 	top: -1.0%;
 }
 
@@ -948,22 +948,22 @@ main { background-image: url('img/boardtest8.png'); }
 	pointer-events: none;
 }
 
-#grave-op {
+#grave-player2 {
 	top: 6.5%;
 	left: 6.5%;
 }
 
-#deck-op {
+#deck-player2 {
 	top: 6.5%;
 	left: 51%
 }
 
-#grave-me {
+#grave-player1 {
 	top: 76.5%;
 	left: 6.5%;
 }
 
-#deck-me {
+#deck-player1 {
 	top: 76.5%;
 	left: 51%
 }
@@ -1048,7 +1048,7 @@ main { background-image: url('img/boardtest8.png'); }
 	text-align: center;
 }
 
-.deck-options{
+.deck-player2tions{
 	position: absolute;
 	font-size: 1vw;
 	color: white;

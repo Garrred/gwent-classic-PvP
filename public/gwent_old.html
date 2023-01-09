@@ -5,7 +5,7 @@
 <head>
 	<title>Gwent Classic from The Widtcher 3: Wild Hunt</title>
 	<meta charset="utf-8" />
-	<meta name="author" content="Arun Sundaram" />
+	<meta name="author" content="Feijun Chen" />
 	<meta name="description" content="Play the original Gwent minigame from The Witcher 3 in your browser! Includes cards from Hearts of Stone and Blood & Wine!" />
 	<meta name="keywords" content="arun, sundaram, programmer, gwent, tw3, witcher, card, game, gamedev, play" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -89,19 +89,19 @@
 	
 	<section id="panel-mid" class="panel">
 		<section id="field-player2" class="field">
-			<div class="field-row">
-				<div class="row-score center">12</div>
-				<div class="row-special card-container"></div>
-				<div class="row-cards card-container"></div>
-				<div class="row-weather"></div>
-			</div>
-			<div class="field-row">
+			<div class="field-row" id="opponent-siege">
 				<div class="row-score center">0</div>
 				<div class="row-special card-container"></div>
 				<div class="row-cards card-container"></div>
 				<div class="row-weather"></div>
 			</div>
-			<div class="field-row">
+			<div class="field-row" id="opponent-ranged">
+				<div class="row-score center">0</div>
+				<div class="row-special card-container"></div>
+				<div class="row-cards card-container"></div>
+				<div class="row-weather"></div>
+			</div>
+			<div class="field-row" id="opponent-close">
 				<div class="row-score center">0</div>
 				<div class="row-special card-container"></div>
 				<div class="row-cards card-container"></div>
@@ -110,19 +110,19 @@
 		</section>
 		
 		<section id="field-player1" class="field">
-			<div class="field-row">
+			<div class="field-row" id="player-close">
 				<div class="row-score center">0</div>
 				<div class="row-special card-container"></div>
 				<div class="row-cards card-container"></div>
 				<div class="row-weather"></div>
 			</div>
-			<div class="field-row">
+			<div class="field-row" id="player-ranged">
 				<div class="row-score center">0</div>
 				<div class="row-special card-container"></div>
 				<div class="row-cards card-container"></div>
 				<div class="row-weather"></div>
 			</div>
-			<div class="field-row">
+			<div class="field-row" id="player-siege">
 				<div class="row-score center">0</div>
 				<div class="row-special card-container"></div>
 				<div class="row-cards card-container"></div>
@@ -133,6 +133,8 @@
 		<section id="field-hand">
 			<div id="hand-row" class="card-container card-selectable">
 			</div>
+			<!-- <div id="hand-row-player2" class="card-container card-selectable">
+			</div> -->
 		</section>
 	</section>
 	
@@ -284,6 +286,7 @@
 <script src="https://www.youtube.com/iframe_api"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script type="text/javascript" src="gwent.js"></script>
+<!-- <script type="module" src="gwent.js"></script> -->
 </body>
 
 </html>

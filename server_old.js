@@ -56,74 +56,55 @@ io.on("connection", (socket) => {
 
   socket.on("playerRejoin", (roomCode) => {
     if (!roomInfo[roomCode]) {
-      roomInfo[roomCode] = {
-        readyCounts: 0,
-        player1_deck: null,
-        player2_deck: null,
-      };
-    }
+    roomInfo[roomCode] = {
+      readyCounts: 0,
+      nilfgaardSpecial: 0,
+      scoiataelSpecial: 0,
+      firstPlayerNum: 0,
+    };
+  }
     socket.join(roomCode);
     io.to(roomCode).emit("AAA");
   });
+  socket.on(
+    "waitForPlayerAndCheckSpecial",
+    (id, checkNilfgaard, checkScoiatael) => {
+      try {
+        console.log("Waiting for player...: " + id);
+        // send "PlayerReady" to room if both players are ready
+        const user = getUser(id);
 
-  socket.on("readyToStart", (player_deck, playerNum, id) => {
-    const user = getUser(id);
-    if (!user) return;
+        if (user) {
+          console.log("Player ready!");
 
-    console.log("Player ready!");
-    if (playerNum === 0) {
-      roomInfo[user.room].player1_deck = player_deck;
-    } else {
-      roomInfo[user.room].player2_deck = player_deck;
+          if (checkNilfgaard) {
+            roomInfo[user.room].nilfgaardSpecial++;
+          }
+          if (checkScoiatael) {
+            roomInfo[user.room].scoiataelSpecial++;
+          }
+
+          // if (!readyCounts[user.room]) {
+          //   readyCounts[user.room] = 0;
+          // }
+          // if (++readyCounts[user.room] === 2) {
+
+          roomInfo[user.room].firstPlayerNum = Math.floor(Math.random() * 2);
+          if (++roomInfo[user.room].readyCounts === 2) {
+            io.to(user.room).emit(
+              "allPlayersReady",
+              roomInfo[user.room].nilfgaardSpecial > 0,
+              roomInfo[user.room].scoiataelSpecial !== 1,
+              roomInfo[user.room].scoiataelSpecial === 1 ? null : roomInfo[user.room].firstPlayerNum
+            );
+            console.log("All players ready!");
+          }
+        }
+      } catch (error) {
+        console.error("Error while handling waitForPlayer message:", error);
+      }
     }
-    // roomInfo[user.room].firstPlayerNum = Math.floor(Math.random() * 2);
-    if (++roomInfo[user.room].readyCounts === 2) {
-      io.to(user.room).emit("allPlayersReady", roomInfo[user.room].player1_deck, roomInfo[user.room].player2_deck);
-      console.log("All players ready!");
-    }
-
-
-  });
-
-  // socket.on(
-  //   "waitForPlayerAndCheckSpecial",
-  //   (id, checkNilfgaard, checkScoiatael) => {
-  //     try {
-  //       console.log("Waiting for player...: " + id);
-  //       // send "PlayerReady" to room if both players are ready
-  //       const user = getUser(id);
-
-  //       if (user) {
-  //         console.log("Player ready!");
-
-  //         if (checkNilfgaard) {
-  //           roomInfo[user.room].nilfgaardSpecial++;
-  //         }
-  //         if (checkScoiatael) {
-  //           roomInfo[user.room].scoiataelSpecial++;
-  //         }
-
-  //         // if (!readyCounts[user.room]) {
-  //         //   readyCounts[user.room] = 0;
-  //         // }
-  //         // if (++readyCounts[user.room] === 2) {
-
-  //         roomInfo[user.room].firstPlayerNum = Math.floor(Math.random() * 2);
-  //         if (++roomInfo[user.room].readyCounts === 2) {
-  //           io.to(user.room).emit(
-  //             "allPlayersReady",
-  //             roomInfo[user.room].nilfgaardSpecial > 0,
-  //             roomInfo[user.room].scoiataelSpecial !== 1,
-  //             roomInfo[user.room].scoiataelSpecial === 1 ? null : roomInfo[user.room].firstPlayerNum
-  //           );
-  //           console.log("All players ready!");
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error("Error while handling waitForPlayer message:", error);
-  //     }
-  //   }
-  // );
+  );
 
   // TODO: handle round end and pass (both in startRound and startTurn)
 
@@ -180,9 +161,3 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-function printSize(obj) {
-  const serializedData = JSON.stringify(obj);
-  const dataSize = Buffer.byteLength(serializedData);
-  console.log(`Data size: ${dataSize} bytes`);
-}
