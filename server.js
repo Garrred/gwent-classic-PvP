@@ -60,6 +60,8 @@ io.on("connection", (socket) => {
         readyCounts: 0,
         player1_deck: null,
         player2_deck: null,
+        player1_cardNames: null,
+        player2_cardNames: null,
       };
     }
     socket.join(roomCode);
@@ -86,14 +88,28 @@ io.on("connection", (socket) => {
       roomInfo[user.room].player2_deck = player_deck;
     }
     if (++roomInfo[user.room].readyCounts === 2) {
-      io.to(user.room).emit("allPlayersReady", roomInfo[user.room].player1_deck, roomInfo[user.room].player2_deck);
+      io.to(user.room).emit("allPlayersReady", roomInfo[user.room].player1_deck, roomInfo[user.room].player2_deck, Math.floor(Math.random() * 2));
       console.log("All players ready!");
+      roomInfo[user.room].readyCounts = 0;
     }
-
-
   });
 
-  // TODO: handle round end and pass (both in startRound and startTurn)
+  socket.on("updateHand", (id, playerNum, cardNames) => {
+    const user = getUser(id);
+    if (!user) return;
+
+    console.log("Player ready!");
+    if (playerNum === 0) {
+      roomInfo[user.room].player1_cardNames = cardNames;
+    } else {
+      roomInfo[user.room].player2_cardNames = cardNames;
+    }
+    if (++roomInfo[user.room].readyCounts === 2) {
+      console.log(roomInfo[user.room].player1_cardNames);
+      console.log(roomInfo[user.room].player2_cardNames);
+      io.to(user.room).emit("updateHand", roomInfo[user.room].player1_cardNames, roomInfo[user.room].player2_cardNames);
+    }
+  });
 
   socket.on("finishedMove", (id) => {
     const user = getUser(id);

@@ -9,15 +9,27 @@ socket.emit("playerRejoin", roomCode);
 // var playerTag = "player1";
 socket.on(
 	"allPlayersReady",
-	(serverSidePlayer1_deck, serverSidePlayer2_deck) => {
+	(serverSidePlayer1_deck, serverSidePlayer2_deck, firstPlayerNum) => {
 	player2 = new Player(1, playerNum === 0 ? serverSidePlayer2_deck : serverSidePlayer1_deck);
-	game.startGame();
+	game.startGame(firstPlayerNum);
 });
 
-socket.on("setFirstPlayer", (firstPlayerNum) => {
-	game.firstPlayer = firstPlayerNum === playerNum ? player1 : player2;
-	game.displayCoinToss();
-	game.initialRedraw();
+// socket.on("setFirstPlayer", (firstPlayerNum) => {
+// 	game.firstPlayer = firstPlayerNum === playerNum ? player1 : player2;
+// 	game.displayCoinToss();
+	
+// 	console.log(player1.hand.getAllCardNames());
+// 	// game.initialRedraw();
+// });
+
+socket.on("updateHand", (serverSidePlayer1_cardNames, serverSidePlayer2_cardNames) => {
+	
+	// console.log(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
+	player2.addCardsToOpponentHand(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
+	
+	// console.log("Opponent Cards Added");
+	// console.log(player2.hand.getAllCardNames());
+	game.startRound();
 });
 
 class Controller {}
@@ -28,7 +40,7 @@ class Player {
 		this.playerId = playerId;
 		this.playerTag = (playerId === 0) ? "player1" : "player2";
 		this.controller = (playerId === 0) ? new Controller() : null;
-    this.name = "Player " + (playerId + 1);
+    	this.name = "Player " + (playerId + 1);
 		
 		this.hand = (playerId === 0) ? new Hand(document.getElementById("hand-row")) : new HandOpponent();
 		this.grave =  new Grave( document.getElementById("grave-" + this.playerTag));
@@ -66,6 +78,16 @@ class Player {
 		this.setPassed(false);
 		document.getElementById("gem1-" +this.playerTag).classList.add("gem-on");
 		document.getElementById("gem2-" +this.playerTag).classList.add("gem-on");
+	}
+	
+	addCardsToOpponentHand(cardNames){
+		for (let i = 0; i < cardNames.length; i++) {
+			// find a card in player2 deck by name using findCard(predicate)
+			let idx = player2.deck.findCardByName(cardNames[i]);
+			player2.hand.addCard(player2.deck.removeCard(idx));
+			// player2.deck.findCard()
+			// player2.deck.addCard()
+		}
 	}
 	
 	// Returns the opponent Player
@@ -193,6 +215,12 @@ class CardContainer {
 	constructor(elem) {
 		this.elem = elem;
 		this.cards = [];
+	}
+	getAllCardNames(){
+		return this.cards.map(c => c.name);
+	}
+	findCardByName(name) {
+		return this.cards.findIndex(c => c.name === name);
 	}
 	
 	// Returns the first card that satisfies the predcicate. Does not modify container.
@@ -464,6 +492,7 @@ class HandOpponent extends CardContainer {
 		this.counter = document.getElementById("hand-count-player2"); 
 		this.hidden_elem = document.getElementById("hand-player2");
 	}
+	
 	resize() {this.counter.innerHTML = this.cards.length; }
 }
 
@@ -473,7 +502,8 @@ class Hand extends CardContainer {
 		super(elem);
 		this.counter = document.getElementById("hand-count-player1");
 	}
-	
+
+		
 	// Override
 	addCard(card){
 		let i = this.addCardSorted(card);
@@ -887,18 +917,26 @@ class Game {
 	}
 	
 	// Sets initializes player abilities, player hands and redraw
-	async startGame() {
+	async startGame(firstPlayerNum) {
 		ui.toggleMusic_elem.classList.remove("music-customization");
 		this.initPlayers(player1, player2);
 		await Promise.all([...Array(10).keys()].map( async () => {
 			await player1.deck.draw(player1.hand);
       // TODO: change to receive from server
-			await player2.deck.draw(player2.hand);
+			// await player2.deck.draw(player2.hand);
+			// console.log(player1.hand.getAllCardNames());
 		}));
 		
+		// console.log(player1.hand.getAllCardNames());
 		await this.runEffects(this.gameStart);
-		if (!this.firstPlayer)
-			socket.emit("setFirstPlayer", playerServerId);
+		if (!this.firstPlayer) {
+			this.firstPlayer = firstPlayerNum === playerNum ? player1 : player2;
+			
+			// game.firstPlayer = firstPlayerNum === playerNum ? player1 : player2;
+			game.displayCoinToss();
+			this.initialRedraw();
+		}
+			// socket.emit("setFirstPlayer", playerServerId);
 			// this.firstPlayer = await this.coinToss();
 	}
 	
@@ -915,7 +953,11 @@ class Game {
 		// 	player2.controller.redraw();
 		// await ui.queueCarousel(player1.hand, 2, async (c, i) => await player1.deck.swap(c, c.removeCard(i)), c => true, true, true, "Choose up to 2 cards to redraw.");
 		ui.enablePlayer(false);
-		game.startRound();
+
+		// console.log("initialRedraw");
+		// console.log(player1.hand.getAllCardNames());
+
+		socket.emit("updateHand", playerServerId, playerNum, player1.hand.getAllCardNames());
 	}
 	
 	// Initiates a new round of the game
