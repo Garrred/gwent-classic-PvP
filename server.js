@@ -85,46 +85,6 @@ io.on("connection", (socket) => {
 
   });
 
-  // socket.on(
-  //   "waitForPlayerAndCheckSpecial",
-  //   (id, checkNilfgaard, checkScoiatael) => {
-  //     try {
-  //       console.log("Waiting for player...: " + id);
-  //       // send "PlayerReady" to room if both players are ready
-  //       const user = getUser(id);
-
-  //       if (user) {
-  //         console.log("Player ready!");
-
-  //         if (checkNilfgaard) {
-  //           roomInfo[user.room].nilfgaardSpecial++;
-  //         }
-  //         if (checkScoiatael) {
-  //           roomInfo[user.room].scoiataelSpecial++;
-  //         }
-
-  //         // if (!readyCounts[user.room]) {
-  //         //   readyCounts[user.room] = 0;
-  //         // }
-  //         // if (++readyCounts[user.room] === 2) {
-
-  //         roomInfo[user.room].firstPlayerNum = Math.floor(Math.random() * 2);
-  //         if (++roomInfo[user.room].readyCounts === 2) {
-  //           io.to(user.room).emit(
-  //             "allPlayersReady",
-  //             roomInfo[user.room].nilfgaardSpecial > 0,
-  //             roomInfo[user.room].scoiataelSpecial !== 1,
-  //             roomInfo[user.room].scoiataelSpecial === 1 ? null : roomInfo[user.room].firstPlayerNum
-  //           );
-  //           console.log("All players ready!");
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error("Error while handling waitForPlayer message:", error);
-  //     }
-  //   }
-  // );
-
   // TODO: handle round end and pass (both in startRound and startTurn)
 
   socket.on("finishedMove", (id) => {
