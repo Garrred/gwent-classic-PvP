@@ -6,15 +6,6 @@ Known BUGS:
 [ ] Users still occupies room after they disconnect.
 [ ] User join & exit consistency, including re-join.
 [ ] Server side infomation updates upon restart game.
-[ ] Nilf & Soc's Leader & faction special abilities haven't been tested.
-[ ] Nilf Leader UI updates on both clients.
-[ ] Leader selection fix.
-[ ] Soc faction ability implementation.
-[ ] First player UI notification.
 [ ] Player can place cards while opponent is redrawing at the beginning.
-[ ] Round & turn UI notification.
-[ ] Control flow upon round pass.
-[ ] Set winning.
-[ ] First player reversed.
 [ ] Event listeners remains open.
 [ ] Data transmitted is too large.

@@ -66,6 +66,15 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("AAA");
   });
 
+  // socket.on("startGame", () => {
+
+  socket.on("setFirstPlayer", (id) => {
+    const user = getUser(id);
+    if (!user) return;
+
+    io.to(user.room).emit("setFirstPlayer", Math.floor(Math.random() * 2));
+  });
+
   socket.on("readyToStart", (player_deck, playerNum, id) => {
     const user = getUser(id);
     if (!user) return;
@@ -76,7 +85,6 @@ io.on("connection", (socket) => {
     } else {
       roomInfo[user.room].player2_deck = player_deck;
     }
-    // roomInfo[user.room].firstPlayerNum = Math.floor(Math.random() * 2);
     if (++roomInfo[user.room].readyCounts === 2) {
       io.to(user.room).emit("allPlayersReady", roomInfo[user.room].player1_deck, roomInfo[user.room].player2_deck);
       console.log("All players ready!");

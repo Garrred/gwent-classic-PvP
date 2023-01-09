@@ -7,6 +7,18 @@ const playerServerId = parseInt(sessionStorage.getItem("playerId"));
 
 socket.emit("playerRejoin", roomCode);
 // var playerTag = "player1";
+socket.on(
+	"allPlayersReady",
+	(serverSidePlayer1_deck, serverSidePlayer2_deck) => {
+	player2 = new Player(1, playerNum === 0 ? serverSidePlayer2_deck : serverSidePlayer1_deck);
+	game.startGame();
+});
+
+socket.on("setFirstPlayer", (firstPlayerNum) => {
+	game.firstPlayer = firstPlayerNum === playerNum ? player1 : player2;
+	game.displayCoinToss();
+	game.initialRedraw();
+});
 
 class Controller {}
 
@@ -886,15 +898,15 @@ class Game {
 		
 		await this.runEffects(this.gameStart);
 		if (!this.firstPlayer)
-			this.firstPlayer = await this.coinToss();
-		this.initialRedraw();
+			socket.emit("setFirstPlayer", playerServerId);
+			// this.firstPlayer = await this.coinToss();
 	}
 	
 	// Simulated coin toss to determine who starts game
-	async coinToss(){
-		this.firstPlayer = (Math.random() < 0.5) ? player1 : player2;
-		await ui.notification(this.firstPlayer.tag + "-coin", 1200);
-		return this.firstPlayer;
+	async displayCoinToss(){
+		// this.firstPlayer = (Math.random() < 0.5) ? player1 : player2;
+		await ui.notification(this.firstPlayer.playerTag + "-coin", 1200);
+		// return this.firstPlayer;
 	}
 	
 	// Allows the player to swap out up to two cards from their iniitial hand
@@ -925,7 +937,7 @@ class Game {
 		
 		await ui.notification("round-start", 1200);
 		if (this.currPlayer.opponent().passed)
-			await ui.notification(this.currPlayer.tag + "-turn", 1200);
+			await ui.notification(this.currPlayer.playerTag + "-turn", 1200);
 		
 		this.startTurn();
 	}
@@ -935,7 +947,7 @@ class Game {
 		await this.runEffects(this.turnStart);
 		if (!this.currPlayer.opponent().passed){
 			this.currPlayer = this.currPlayer.opponent();
-			await ui.notification(this.currPlayer.tag + "-turn", 1200);
+			await ui.notification(this.currPlayer.playerTag + "-turn", 1200);
 		}
 		ui.enablePlayer(this.currPlayer === player1);
 		this.currPlayer.startTurn();
@@ -947,7 +959,7 @@ class Game {
 			ui.enablePlayer(false);
 		await this.runEffects(this.turnEnd);
 		if (this.currPlayer.passed)
-			await ui.notification(this.currPlayer.tag + "-pass", 1200);
+			await ui.notification(this.currPlayer.playerTag + "-pass", 1200);
 		if (player2.passed && player1.passed)
 			this.endRound();
 		else
@@ -1730,18 +1742,6 @@ class Popup {
 // Screen used to customize, import and export deck contents
 class DeckMaker {
 	constructor() {
-    socket.on(
-      "allPlayersReady",
-      (serverSidePlayer1_deck, serverSidePlayer2_deck) => {
-
-        // resolve();
-        // console.log("Received allPlayersReady message from server!");
-        // game.startGame(nilfgaardMet, scoiataelMet, firstPlayerNum);
-        player2 = new Player(1, playerNum === 0 ? serverSidePlayer2_deck : serverSidePlayer1_deck);
-        
-        game.startGame();
-      }
-    );
 		this.elem = document.getElementById("deck-customization");
 		this.bank_elem = document.getElementById("card-bank");
 		this.deck_elem = document.getElementById("card-deck");
@@ -1972,7 +1972,7 @@ class DeckMaker {
 		player1 = new Player(0, player1_deck);
 		this.elem.classList.add("hide");
 
-    socket.emit("readyToStart", player1_deck, playerNum, playerServerId);
+    	socket.emit("readyToStart", player1_deck, playerNum, playerServerId);
 	}
 	
 	// Converts the current deck to a JSON string
