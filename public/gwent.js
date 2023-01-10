@@ -28,7 +28,9 @@ socket.on("passRound", () => {
 	game.currPlayer.passRound();
 });
 
-socket.on("placeCard", (playerNum_placed, cardName, rowIdx, isDecoy, decoyCardName) => {
+socket.on("placeCard", (playerNum_placed, cardName, rowIdx, isDecoy, decoyCardName, isMedic, medicCardName) => {
+	// TODO: reduce number of params, maybe use a string to represent type
+	
 	if (playerNum === playerNum_placed) return;
 	// TODO: show preview cards from opponent
 	ui.previewCard = player2.hand.cards[player2.hand.findCardByName(cardName)];
@@ -44,9 +46,34 @@ socket.on("placeCard", (playerNum_placed, cardName, rowIdx, isDecoy, decoyCardNa
 		ui.decoyOpponentA(row.cards[cardIdx], row, ui.previewCard);
 		return;
 	}
+
+	if (isMedic) {
+		let cardIdx = player2.grave.findCardByName(medicCardName);
+		player2.grave.cards[cardIdx].autoplay(player2.grave);
+
+		// console.log("isMedic");
+		// console.log(cardIdx);
+		// console.log(grave.cards);
+		return;
+	}
+
+	console.log(cardName);
+
+	const terms = ["Weather", "Frost", "Fog", "Rain", "Storm"];
+	// const str = "very large string to check for term1, tern2, etc ..."
+
+	// check if the string has some of the terms
+	// const result1 = 
 	// rowIdx must be from 3-4, if not then it's a weather card
-	if (rowIdx) ui.selectRow(row);
-	else ui.selectRow(weather);
+	if (terms.some(term => cardName.includes(term))) {
+		ui.selectRow(weather);
+	}
+	else ui.selectRow(row);
+});
+
+socket.on("activateLeader", (playerNum_placed) => {
+	if (playerNum === playerNum_placed) return;
+	player2.activateLeader();
 });
 
 class Controller {}
@@ -241,6 +268,12 @@ class Player {
 	
 	// Use a leader's Activate ability, then disable the leader
 	async activateLeader() {
+		console.log("activateLeader");
+		if (player1 === game.currPlayer) {
+			console.log("Yes");
+			socket.emit("activateLeader", playerServerId, playerNum);
+
+		}
 		ui.showPreviewVisuals(this.leader);
 		await sleep(1500);
 		ui.hidePreview(this.leader);
@@ -269,7 +302,13 @@ class Player {
 		this.elem_leader.children[0].classList.remove("fade");
 		this.elem_leader.children[1].classList.remove("hide");
 		
-		if (this.id === 0 && this.leader.activated.length > 0){
+		// console.log("pre - enabling leader");
+		// console.log("leaderAvailable: " + this.leaderAvailable);
+		// console.log("activated: " + this.leader.activated.length);
+		// console
+
+		if (this.playerId === 0 && this.leader.activated.length > 0){
+			// console.log("enabling leader");
 			this.elem_leader.addEventListener("click", 
 				async () => await ui.viewCard(this.leader, async () => await this.activateLeader()),
 				false);
@@ -622,12 +661,16 @@ class Row extends CardContainer {
 		}
 		this.updateState(card, true);
 		for (let x of card.placed) {
+			if (game.currPlayer !== player1 && card.abilities.includes("medic")) continue;
 			let res = await x(card, this);
 
 			if (game.currPlayer !== player1) continue;
 
 			if (card.abilities.includes("spy")) {
 				socket.emit("updateHand", playerServerId, playerNum, res, false);
+			}
+			if (card.abilities.includes("medic")) {
+				socket.emit("placeCard", playerServerId, playerNum, card.name, null, false, null, true, res);
 			}
 		}
 		card.elem.classList.add("noclick");
@@ -912,8 +955,8 @@ class Board {
 			dest = this.getRow(card, dest);
 		if (dest instanceof HandOpponent) {
 			// console.log(card.name);
-			console.log(dest);
-			console.log(card);
+			// console.log(dest);
+			// console.log(card);
 			// console.log(card.elem);
 		}
 		await translateTo(card, source ? source : null, dest);
@@ -1094,6 +1137,9 @@ class Game {
 	async endTurn() {
 		if (this.currPlayer === player1)
 			ui.enablePlayer(false);
+		else {
+			console.log("endTurn");
+		}
 		await this.runEffects(this.turnEnd);
 		if (this.currPlayer.passed)
 			await ui.notification(this.currPlayer.playerTag + "-pass", 1200);

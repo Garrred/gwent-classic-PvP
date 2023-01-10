@@ -15,6 +15,5 @@ Known BUGS:
 - [ ] Weather cards.
 - [ ] Ability cards.
 - [ ] Will lose track of whose turn it is if clicking too fast.
-- [ ] Cards:
-  - [ ] Medic
-  - [ ] Leader Ability
+- [ ] Leader Ability
+- [ ] Figure out what on earth is async and await

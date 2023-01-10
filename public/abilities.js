@@ -132,17 +132,19 @@ var ability_dict = {
 			if (units.length <= 0)
 				return;
 			let wrapper = {card : null};
-			if (game.randomRespawn) {
-				 wrapper.card = grave.findCardsRandom(c => c.isUnit())[0];
-			} else if (card.holder.controller instanceof ControllerAI)
-				wrapper.card =  card.holder.controller.medic(card, grave);
-			else
-				await ui.queueCarousel(card.holder.grave, 1, (c, i) => wrapper.card=c.cards[i], c => c.isUnit(), true);
+			// if (game.randomRespawn) {
+			// 	 wrapper.card = grave.findCardsRandom(c => c.isUnit())[0];
+			// } else if (card.holder.controller instanceof ControllerAI)
+			// 	wrapper.card =  card.holder.controller.medic(card, grave);
+			// else
+			await ui.queueCarousel(card.holder.grave, 1, (c, i) => wrapper.card=c.cards[i], c => c.isUnit(), true);
 			let res = wrapper.card;
+
 			grave.removeCard(res);
 			grave.addCard(res);
 			await res.animate("medic");
 			await res.autoplay(grave);
+			return res.name;
 		}
 	},
 	morale: {
