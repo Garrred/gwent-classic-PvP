@@ -14,3 +14,4 @@ Known BUGS:
 - [ ] Special unit cards.
 - [ ] Weather cards.
 - [ ] Ability cards.
+- [ ] Will lose track of whose turn it is if clicking too fast.

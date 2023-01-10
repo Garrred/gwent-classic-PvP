@@ -42,12 +42,12 @@ socket.on("passRound", () => {
 socket.on("placeCard", (playerNum_placed, cardName, rowIdx) => {
 	if (playerNum === playerNum_placed) return;
 
+	// TODO: show preview cards
 	ui.previewCard = player2.hand.cards[player2.hand.findCardByName(cardName)];
 
-	console.log(ui.previewCard);
-	console.log(rowIdx);
-
-	ui.selectRow(board.row[5 - rowIdx]);
+	// rowIdx must be from 3-4, if not then it's a weather card
+	if (rowIdx) ui.selectRow(board.row[5 - rowIdx]);
+	else ui.selectRow(weather);
 });
 
 class Controller {}
