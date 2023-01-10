@@ -25,7 +25,8 @@ socket.on(
 socket.on("updateHand", (serverSidePlayer1_cardNames, serverSidePlayer2_cardNames, newRound) => {
 	
 	// console.log(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
-	player2.addCardsToOpponentHand(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
+	let cardsToAdd = playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames;
+	if (cardsToAdd) player2.addCardsToOpponentHand(cardsToAdd);
 	
 	// console.log("Opponent Cards Added");
 	// console.log(player2.hand.getAllCardNames());
@@ -461,8 +462,11 @@ class Deck extends CardContainer {
 	
 	// Sends the top card to the passed hand
 	async draw(hand){
-		if (hand === player2.hand)
-			hand.addCard(this.removeCard(0));
+		if (hand === player2.hand) {
+			// hand.addCard(this.removeCard(0));
+			// let newCard = this.cards[0];
+			// return newCard.name;
+		}
 		else {
 			let newCard = this.cards[0];
 			await board.toHand(this.cards[0], this);
@@ -566,8 +570,15 @@ class Row extends CardContainer {
 			this.resize();
 		}
 		this.updateState(card, true);
-		for (let x of card.placed) 
-			await x(card, this);
+		for (let x of card.placed) {
+			let res = await x(card, this);
+
+			if (game.currPlayer !== player1) continue;
+
+			if (card.abilities.includes("spy")) {
+				socket.emit("updateHand", playerServerId, playerNum, res, false);
+			}
+		}
 		card.elem.classList.add("noclick");
 		await sleep(600);
 		this.updateScore();

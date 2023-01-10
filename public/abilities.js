@@ -113,11 +113,14 @@ var ability_dict = {
 		description: "Place on your opponent's battlefield (counts towards your opponent's total) and draw 2 cards from your deck. ",
 		placed: async (card) => {
 			await card.animate("spy");
+			let newCardNames = [];
 			for (let i=0;i<2;i++) {
 				if (card.holder.deck.cards.length > 0)
-					await card.holder.deck.draw(card.holder.hand);
+					newCardNames.push(await card.holder.deck.draw(card.holder.hand));
+				
 			}
 			card.holder = card.holder.opponent();
+			return newCardNames;
 		}
 	},
 	medic: {
