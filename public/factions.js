@@ -19,7 +19,7 @@ var factions = {
 	monsters: {
 		name: "Monsters",
 		factionAbility: player => game.roundEnd.push( () => {
-			let units = board.row.filter( (r,i) => player === player_me ^ i < 3)
+			let units = board.row.filter( (r,i) => player === player1 ^ i < 3)
 				.reduce((a,r) => r.cards.filter(c => c.isUnit()).concat(a), []);
 			if (units.length === 0)
 				return;
@@ -38,7 +38,7 @@ var factions = {
 		name: "Scoia'tael",
 		factionAbility: player => game.gameStart.push( async () => {
 			let notif = "";
-			if (player === player_me) {
+			if (player === player1) {
 				await ui.popup("Go First", () => game.firstPlayer = player, "Let Opponent Start", () => game.firstPlayer = player.opponent(), "Would you like to go first?", "The Scoia'tael faction perk allows you to decide who will get to go first.");
 				socket.emit("setFirstPlayer", playerId, game.firstPlayer.tag);
 				notif = game.firstPlayer.tag + "-first";

@@ -17,3 +17,4 @@ Known BUGS:
 - [ ] Will lose track of whose turn it is if clicking too fast.
 - [ ] Leader Ability
 - [ ] Figure out what on earth is async and await
+- [ ] Soc faction ability
