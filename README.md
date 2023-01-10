@@ -16,6 +16,5 @@ Known BUGS:
 - [ ] Ability cards.
 - [ ] Will lose track of whose turn it is if clicking too fast.
 - [ ] Cards:
-  - [ ] Decoy
   - [ ] Medic
   - [ ] Leader Ability

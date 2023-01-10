@@ -30,16 +30,18 @@ socket.on("passRound", () => {
 
 socket.on("placeCard", (playerNum_placed, cardName, rowIdx, isDecoy, decoyCardName) => {
 	if (playerNum === playerNum_placed) return;
-
 	// TODO: show preview cards from opponent
 	ui.previewCard = player2.hand.cards[player2.hand.findCardByName(cardName)];
 
 	let row = board.row[5 - rowIdx];
 
 	if (isDecoy) {
-		let card = row.findCardByName(decoyCardName);
-		ui.decoyOpponent(card, row, ui.previewCard);
-		// player2.playCardToRow(ui.previewCard, );
+		// console.log("placeCard: " + cardName);
+		// console.log("decoyCardName: " + decoyCardName);
+		let cardIdx = row.findCardByName(decoyCardName);
+		// console.log(cardIdx);
+		// console.log(row);
+		ui.decoyOpponentA(row.cards[cardIdx], row, ui.previewCard);
 		return;
 	}
 	// rowIdx must be from 3-4, if not then it's a weather card
@@ -908,6 +910,12 @@ class Board {
 	async moveTo(card, dest, source) {
 		if (isString(dest))
 			dest = this.getRow(card, dest);
+		if (dest instanceof HandOpponent) {
+			// console.log(card.name);
+			console.log(dest);
+			console.log(card);
+			// console.log(card.elem);
+		}
 		await translateTo(card, source ? source : null, dest);
 		await dest.addCard(source ? source.removeCard(card) : card);
 	}
@@ -1451,6 +1459,11 @@ class UI {
 		this.ytActive = enable;
 }
 	
+	async decoyOpponentA(targ, row, card) {
+		setTimeout(() => board.moveTo(targ, player2.hand, row), 1000);
+		await player2.playCardToRow(card, row);
+	}
+
 	async decoyOpponent(card, row, pCard) {
 		board.toOpponentHand(card, row);
 		await board.moveTo(pCard, row, pCard.holder.hand);
