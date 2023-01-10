@@ -68,8 +68,6 @@ io.on("connection", (socket) => {
     io.to(roomCode).emit("AAA");
   });
 
-  // socket.on("startGame", () => {
-
   socket.on("setFirstPlayer", (id) => {
     const user = getUser(id);
     if (!user) return;
@@ -106,17 +104,17 @@ io.on("connection", (socket) => {
     }
 
     if (!newRound) {
-      io.to(user.room).emit("updateHand", roomInfo[user.room].player1_cardNames, roomInfo[user.room].player2_cardNames, newRound);
-      roomInfo[user.room].player1_cardNames = null;
-      roomInfo[user.room].player2_cardNames = null;
+      sendCardNames();
     }
     else if (++roomInfo[user.room].readyCounts === 2) {
-      console.log(roomInfo[user.room].player1_cardNames);
-      console.log(roomInfo[user.room].player2_cardNames);
+      sendCardNames();
+      roomInfo[user.room].readyCounts = 0;
+    }
+    
+    function sendCardNames() {
       io.to(user.room).emit("updateHand", roomInfo[user.room].player1_cardNames, roomInfo[user.room].player2_cardNames, newRound);
       roomInfo[user.room].player1_cardNames = null;
       roomInfo[user.room].player2_cardNames = null;
-      roomInfo[user.room].readyCounts = 0;
     }
   });
 
@@ -155,33 +153,10 @@ io.on("connection", (socket) => {
     console.log("TEST SUCCEEDED!");
   });
 
-  // socket.on("sendMessage", (payload, callback) => {
-  //   const user = getUser(socket.id);
-  //   io.to(user.room).emit("message", {
-  //     user: user.name,
-  //     text: payload.message,
-  //   });
-  //   callback();
-  // });
-
   socket.on("disconnect", () => {
     const user = userExit(id);
-    // if (user)
-    //   io.to(user.room).emit("roomData", {
-    //     room: user.room,
-    //     users: getUsersInRoom(user.room),
-    //   });
   });
 });
-
-// //serve static assets in production
-// if (process.env.NODE_ENV === "production") {
-//   //set static folder
-//   app.use(express.static("client/build"));
-//   app.get("*", (req, res) => {
-//     res.sendFile(path.resolve(__dirname, "client", "build", "index.html"));
-//   });
-// }
 
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

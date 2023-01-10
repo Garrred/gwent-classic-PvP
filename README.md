@@ -10,7 +10,6 @@ Known BUGS:
 - [ ] Event listeners remains open.
 - [ ] Data transmitted is too large.
 - [ ] Opponent card preview.
-- [ ] Muster summon cards from hand situation handling.
 - [ ] Leader ability activation.
 - [ ] Special unit cards.
 - [ ] Weather cards.
