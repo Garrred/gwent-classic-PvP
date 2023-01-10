@@ -36,6 +36,17 @@ socket.on("passRound", () => {
 	game.currPlayer.passRound();
 });
 
+socket.on("placeCard", (playerNum_placed, cardName, rowIdx) => {
+	if (playerNum === playerNum_placed) return;
+
+	ui.previewCard = player2.hand.cards[player2.hand.findCardByName(cardName)];
+
+	console.log(ui.previewCard);
+	console.log(rowIdx);
+
+	ui.selectRow(board.row[5 - rowIdx]);
+});
+
 class Controller {}
 
 // Can make actions during turns like playing cards that it owns
@@ -527,8 +538,9 @@ class Hand extends CardContainer {
 
 // Contains active cards and effects. Calculates the current score of each card and the row.
 class Row extends CardContainer {
-	constructor(elem) {
+	constructor(elem, rowIdx) {
 		super(elem.getElementsByClassName("row-cards")[0]);
+		this.index = rowIdx;
 		this.elem_parent = elem;
 		this.elem_special = elem.getElementsByClassName("row-special")[0];
 		this.special = null;
@@ -789,7 +801,7 @@ class Board {
 		this.row = [];
 		for (let x=0; x<6; ++x) {
 			let elem = document.getElementById( (x<3)?"field-player2":"field-player1" ).children[x%3];
-			this.row[x] = new Row(elem);
+			this.row[x] = new Row(elem, x);
 		}
 	}
 	
@@ -1398,6 +1410,12 @@ class UI {
 		}
 		if (this.previewCard.name === "Decoy")
 			return;
+
+		// TODO: make sure all cards are processed
+		if (game.currPlayer === player1) {
+			socket.emit("placeCard", playerServerId, playerNum, this.previewCard.name, row.index);
+		}
+
 		let card = this.previewCard;
 		let holder = card.holder;
 		this.hidePreview();

@@ -116,12 +116,20 @@ io.on("connection", (socket) => {
     if (user) io.to(user.room).emit("passRound");
   });
 
-  socket.on("finishedMove", (id) => {
+  socket.on("moveCard", (id, cardName, playerNum) => {
     const user = getUser(id);
-    if (user) io.to(user.room).emit("updateGame");
+    if (user) io.to(user.room).emit("moveCard", cardName, playerNum);
   });
 
-  // socket.on("", (id) => {
+  socket.on("finishedMove", (id) => {
+    const user = getUser(id);
+    if (user) io.to(user.room).emit("finishedMove");
+  });
+
+  socket.on("placeCard", (id, playerNum, cardName, rowIdx) => {
+    const user = getUser(id);
+    if (user) io.to(user.room).emit("placeCard", playerNum, cardName, rowIdx);
+  });
 
 
   socket.on("initGameState", (gameState) => {
