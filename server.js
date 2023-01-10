@@ -94,20 +94,29 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("updateHand", (id, playerNum, cardNames) => {
+  socket.on("updateHand", (id, playerNum, cardNames, newRound) => {
     const user = getUser(id);
     if (!user) return;
 
-    console.log("Player ready!");
+    // console.log("Player ready!");
     if (playerNum === 0) {
       roomInfo[user.room].player1_cardNames = cardNames;
     } else {
       roomInfo[user.room].player2_cardNames = cardNames;
     }
-    if (++roomInfo[user.room].readyCounts === 2) {
+
+    if (!newRound) {
+      io.to(user.room).emit("updateHand", roomInfo[user.room].player1_cardNames, roomInfo[user.room].player2_cardNames, newRound);
+      roomInfo[user.room].player1_cardNames = null;
+      roomInfo[user.room].player2_cardNames = null;
+    }
+    else if (++roomInfo[user.room].readyCounts === 2) {
       console.log(roomInfo[user.room].player1_cardNames);
       console.log(roomInfo[user.room].player2_cardNames);
-      io.to(user.room).emit("updateHand", roomInfo[user.room].player1_cardNames, roomInfo[user.room].player2_cardNames);
+      io.to(user.room).emit("updateHand", roomInfo[user.room].player1_cardNames, roomInfo[user.room].player2_cardNames, newRound);
+      roomInfo[user.room].player1_cardNames = null;
+      roomInfo[user.room].player2_cardNames = null;
+      roomInfo[user.room].readyCounts = 0;
     }
   });
 

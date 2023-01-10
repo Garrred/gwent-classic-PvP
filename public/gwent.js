@@ -22,14 +22,16 @@ socket.on(
 // 	// game.initialRedraw();
 // });
 
-socket.on("updateHand", (serverSidePlayer1_cardNames, serverSidePlayer2_cardNames) => {
+socket.on("updateHand", (serverSidePlayer1_cardNames, serverSidePlayer2_cardNames, newRound) => {
 	
 	// console.log(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
 	player2.addCardsToOpponentHand(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
 	
 	// console.log("Opponent Cards Added");
 	// console.log(player2.hand.getAllCardNames());
-	game.startRound();
+	if (newRound) {
+		game.startRound();
+	}
 });
 
 socket.on("passRound", () => {
@@ -461,8 +463,11 @@ class Deck extends CardContainer {
 	async draw(hand){
 		if (hand === player2.hand)
 			hand.addCard(this.removeCard(0));
-		else
+		else {
+			let newCard = this.cards[0];
 			await board.toHand(this.cards[0], this);
+			return newCard.name;
+		}
 	}
 	
 	// Draws a card and sends it to the container before adding a card from the container back to the deck.
@@ -976,7 +981,7 @@ class Game {
 		// console.log("initialRedraw");
 		// console.log(player1.hand.getAllCardNames());
 
-		socket.emit("updateHand", playerServerId, playerNum, player1.hand.getAllCardNames());
+		socket.emit("updateHand", playerServerId, playerNum, player1.hand.getAllCardNames(), true);
 	}
 	
 	// Initiates a new round of the game
