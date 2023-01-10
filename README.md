@@ -18,6 +18,4 @@ Known BUGS:
 - [ ] Cards:
   - [ ] Decoy
   - [ ] Medic
-  - [ ] Scorch
-  - [ ] Scorch - row specific
   - [ ] Leader Ability

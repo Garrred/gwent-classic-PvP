@@ -28,14 +28,22 @@ socket.on("passRound", () => {
 	game.currPlayer.passRound();
 });
 
-socket.on("placeCard", (playerNum_placed, cardName, rowIdx) => {
+socket.on("placeCard", (playerNum_placed, cardName, rowIdx, isDecoy, decoyCardName) => {
 	if (playerNum === playerNum_placed) return;
 
 	// TODO: show preview cards from opponent
 	ui.previewCard = player2.hand.cards[player2.hand.findCardByName(cardName)];
 
+	let row = board.row[5 - rowIdx];
+
+	if (isDecoy) {
+		let card = row.findCardByName(decoyCardName);
+		ui.decoyOpponent(card, row, ui.previewCard);
+		// player2.playCardToRow(ui.previewCard, );
+		return;
+	}
 	// rowIdx must be from 3-4, if not then it's a weather card
-	if (rowIdx) ui.selectRow(board.row[5 - rowIdx]);
+	if (rowIdx) ui.selectRow(row);
 	else ui.selectRow(weather);
 });
 
@@ -86,10 +94,62 @@ class Player {
 		document.getElementById("gem1-" +this.playerTag).classList.add("gem-on");
 		document.getElementById("gem2-" +this.playerTag).classList.add("gem-on");
 	}
+
+
+	// async decoy(card, max, data) {
+	// 	let targ, row;
+	// 	if (data.spy.length){
+	// 		let min = data.spy.reduce( (a,c) => Math.min(a, c.power), Number.MAX_VALUE);
+	// 		targ = data.spy.filter(c => c.power === min)[0];
+	// 	} else if (data.medic.length) {
+	// 		targ = data.medic[randomInt(data.medic.length)];
+	// 	} else if (data.scorch.length) {
+	// 		targ = data.scorch[randomInt(data.scorch.length)];
+	// 	} else {
+	// 		let pairs = max.rmax.filter((r,i) => i<3 && r.cards.length).reduce((a,r) => 
+	// 			r.cards.map(c => ({r:r.row, c:c})).concat(a)
+	// 		, []);
+	// 		let pair = pairs[randomInt(pairs.length)];
+	// 		targ = pair.c;
+	// 		row = pair.r;
+	// 	}
+		
+	// 	for (let i = 0; !row ; ++i){
+	// 		if (board.row[i].cards.indexOf(targ) !== -1){
+	// 			row = board.row[i];
+	// 			break;
+	// 		}
+	// 	}
+		
+	// 	await this.player.playCardToRow(card, row);
+	// }
+
+	// Plays a scorch card
+	async playScorch(card){
+		await this.playCardAction(card, async () => await ability_dict["scorch"].activated(card));
+	}
+	
+	// Plays a card to a specific row
+	async playCardToRow(card, row){
+		await this.playCardAction(card, async () => await board.moveTo(card, row, this.hand));
+	}
+	
+	// Plays a card to the board
+	async playCard(card){
+		await this.playCardAction(card, async () => await card.autoplay(this.hand));
+	}
+	
+	// Shows a preview of the card being played, plays it to the board and ends the turn
+	async playCardAction(card, action){
+		ui.showPreviewVisuals(card);
+		await sleep(1000);
+		ui.hidePreview(card);
+		await action();
+		this.endTurn();
+	}
 	
 	addCardsToOpponentHand(cardNames){
 		for (let i = 0; i < cardNames.length; i++) {
-			// find a card in player2 deck by name using findCard(predicate)
 			let idx = player2.deck.findCardByName(cardNames[i]);
 			player2.hand.addCard(player2.deck.removeCard(idx));
 			// player2.deck.findCard()
@@ -809,7 +869,6 @@ class Board {
 			this.row[x] = new Row(elem, x);
 		}
 	}
-	
 	// Get the opponent of this Player
 	opponent(player){
 		return player === player1 ? player2 : player1;
@@ -828,6 +887,10 @@ class Board {
 	// Sends and translates a card from the source to the Hand of the card's holder
 	async toHand(card, source) {
 		await this.moveTo(card, "hand", source);
+	}
+
+	async toOpponentHand(card, source) {
+		await this.moveTo(card, player2.hand, source);
 	}
 
 	// Sends and translates a card from the source to Weather
@@ -1388,6 +1451,12 @@ class UI {
 		this.ytActive = enable;
 }
 	
+	async decoyOpponent(card, row, pCard) {
+		board.toOpponentHand(card, row);
+		await board.moveTo(pCard, row, pCard.holder.hand);
+		pCard.holder.endTurn();
+	}
+	
 	// Called when the player selects a selectable card
 	async selectCard(card) {
 		let row = this.lastRow;
@@ -1398,6 +1467,9 @@ class UI {
 			this.setSelectable(null, false);
 			this.showPreview(card);
 		} else if (pCard.name === "Decoy") {
+			if (game.currPlayer === player1) {
+				socket.emit("placeCard", playerServerId, playerNum, pCard.name, row.index, true, card.name);
+			}
 			this.hidePreview(card);
 			this.enablePlayer(false);
 			board.toHand(card, row);
@@ -1418,7 +1490,7 @@ class UI {
 
 		// TODO: make sure all cards are processed
 		if (game.currPlayer === player1) {
-			socket.emit("placeCard", playerServerId, playerNum, this.previewCard.name, row.index);
+			socket.emit("placeCard", playerServerId, playerNum, this.previewCard.name, row.index, false, null);
 		}
 
 		let card = this.previewCard;

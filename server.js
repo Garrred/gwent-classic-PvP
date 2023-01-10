@@ -133,9 +133,9 @@ io.on("connection", (socket) => {
     if (user) io.to(user.room).emit("finishedMove");
   });
 
-  socket.on("placeCard", (id, playerNum, cardName, rowIdx) => {
+  socket.on("placeCard", (id, playerNum, cardName, rowIdx, isDecoy) => {
     const user = getUser(id);
-    if (user) io.to(user.room).emit("placeCard", playerNum, cardName, rowIdx);
+    if (user) io.to(user.room).emit("placeCard", playerNum, cardName, rowIdx, isDecoy);
   });
 
 
