@@ -14,22 +14,11 @@ socket.on(
 	game.startGame(firstPlayerNum);
 });
 
-// socket.on("setFirstPlayer", (firstPlayerNum) => {
-// 	game.firstPlayer = firstPlayerNum === playerNum ? player1 : player2;
-// 	game.displayCoinToss();
-	
-// 	console.log(player1.hand.getAllCardNames());
-// 	// game.initialRedraw();
-// });
-
 socket.on("updateHand", (serverSidePlayer1_cardNames, serverSidePlayer2_cardNames, newRound) => {
-	
 	// console.log(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
 	let cardsToAdd = playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames;
 	if (cardsToAdd) player2.addCardsToOpponentHand(cardsToAdd);
-	
-	// console.log("Opponent Cards Added");
-	// console.log(player2.hand.getAllCardNames());
+
 	if (newRound) {
 		game.startRound();
 	}
@@ -42,7 +31,7 @@ socket.on("passRound", () => {
 socket.on("placeCard", (playerNum_placed, cardName, rowIdx) => {
 	if (playerNum === playerNum_placed) return;
 
-	// TODO: show preview cards
+	// TODO: show preview cards from opponent
 	ui.previewCard = player2.hand.cards[player2.hand.findCardByName(cardName)];
 
 	// rowIdx must be from 3-4, if not then it's a weather card

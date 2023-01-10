@@ -15,3 +15,9 @@ Known BUGS:
 - [ ] Weather cards.
 - [ ] Ability cards.
 - [ ] Will lose track of whose turn it is if clicking too fast.
+- [ ] Cards:
+  - [ ] Decoy
+  - [ ] Medic
+  - [ ] Scorch
+  - [ ] Scorch - row specific
+  - [ ] Leader Ability
