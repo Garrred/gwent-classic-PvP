@@ -127,6 +127,8 @@ var ability_dict = {
 		name: "medic",
 		description: "Choose one card from your discard pile and play it instantly (no Heroes or Special Cards). ",
 		placed: async (card) => {
+			// if (game.currPlayer === player2) return;
+
 			let grave = board.getRow(card, "grave", card.holder);
 			let units = card.holder.grave.findCards(c => c.isUnit());
 			if (units.length <= 0)
@@ -137,6 +139,7 @@ var ability_dict = {
 			// } else if (card.holder.controller instanceof ControllerAI)
 			// 	wrapper.card =  card.holder.controller.medic(card, grave);
 			// else
+			
 			await ui.queueCarousel(card.holder.grave, 1, (c, i) => wrapper.card=c.cards[i], c => c.isUnit(), true);
 			let res = wrapper.card;
 

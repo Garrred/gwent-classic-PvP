@@ -18,3 +18,4 @@ Known BUGS:
 - [ ] Leader Ability
 - [ ] Figure out what on earth is async and await
 - [ ] Soc faction ability
+- [ ] Figure out strict this

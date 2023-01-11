@@ -28,47 +28,34 @@ socket.on("passRound", () => {
 	game.currPlayer.passRound();
 });
 
-socket.on("placeCard", (playerNum_placed, cardName, rowIdx, isDecoy, decoyCardName, isMedic, medicCardName) => {
-	// TODO: reduce number of params, maybe use a string to represent type
-	
+socket.on("placeCard", (playerNum_placed, type, cardName, rowIdx, specialCardName) => {
 	if (playerNum === playerNum_placed) return;
-	// TODO: show preview cards from opponent
-	ui.previewCard = player2.hand.cards[player2.hand.findCardByName(cardName)];
-
+	
 	let row = board.row[5 - rowIdx];
+	let card = player2.hand.findCardByName(cardName);
 
-	if (isDecoy) {
-		// console.log("placeCard: " + cardName);
-		// console.log("decoyCardName: " + decoyCardName);
-		let cardIdx = row.findCardByName(decoyCardName);
-		// console.log(cardIdx);
-		// console.log(row);
-		ui.decoyOpponentA(row.cards[cardIdx], row, ui.previewCard);
-		return;
+	switch (type) {
+		case null: 
+			player2.playCardToRow(card, row);
+			break;
+		case "medic":
+			// console.log(player2.grave.findCardByName(specialCardName));
+			// player2.cardToRevive = player2.grave.findCardByName(specialCardName);
+			
+			player2.cardToRevive = player2.grave.findCardByName(specialCardName);
+			console.log("pre - card to revive: " + player2.cardToRevive);
+			card.autoplay(player2.hand);
+			// player2.playCardToRow(card, row);
+			// player2.grave.findCardByName(specialCardName).autoplay(player2.grave);
+
+			break;
+		case "decoy":
+			player2.playDecoy(row.findCardByName(specialCardName), row, card);
+			break;
+		case "weather":
+			player2.playCardToRow(card, weather);
+			break;
 	}
-
-	if (isMedic) {
-		let cardIdx = player2.grave.findCardByName(medicCardName);
-		player2.grave.cards[cardIdx].autoplay(player2.grave);
-
-		// console.log("isMedic");
-		// console.log(cardIdx);
-		// console.log(grave.cards);
-		return;
-	}
-
-	console.log(cardName);
-
-	const terms = ["Weather", "Frost", "Fog", "Rain", "Storm"];
-	// const str = "very large string to check for term1, tern2, etc ..."
-
-	// check if the string has some of the terms
-	// const result1 = 
-	// rowIdx must be from 3-4, if not then it's a weather card
-	if (terms.some(term => cardName.includes(term))) {
-		ui.selectRow(weather);
-	}
-	else ui.selectRow(row);
 });
 
 socket.on("activateLeader", (playerNum_placed) => {
@@ -117,6 +104,7 @@ class Player {
 		this.passed = false;
 		this.handsize = 10;
 		this.winning = false;
+		this.cardToRevive = null;
 	
 		this.enableLeader();
 		this.setPassed(false);
@@ -125,33 +113,11 @@ class Player {
 	}
 
 
-	// async decoy(card, max, data) {
-	// 	let targ, row;
-	// 	if (data.spy.length){
-	// 		let min = data.spy.reduce( (a,c) => Math.min(a, c.power), Number.MAX_VALUE);
-	// 		targ = data.spy.filter(c => c.power === min)[0];
-	// 	} else if (data.medic.length) {
-	// 		targ = data.medic[randomInt(data.medic.length)];
-	// 	} else if (data.scorch.length) {
-	// 		targ = data.scorch[randomInt(data.scorch.length)];
-	// 	} else {
-	// 		let pairs = max.rmax.filter((r,i) => i<3 && r.cards.length).reduce((a,r) => 
-	// 			r.cards.map(c => ({r:r.row, c:c})).concat(a)
-	// 		, []);
-	// 		let pair = pairs[randomInt(pairs.length)];
-	// 		targ = pair.c;
-	// 		row = pair.r;
-	// 	}
-		
-	// 	for (let i = 0; !row ; ++i){
-	// 		if (board.row[i].cards.indexOf(targ) !== -1){
-	// 			row = board.row[i];
-	// 			break;
-	// 		}
-	// 	}
-		
-	// 	await this.player.playCardToRow(card, row);
-	// }
+	async playDecoy(targ, row, card) {
+		setTimeout(() => board.moveTo(targ, player2.hand, row), 1000);
+		await player2.playCardToRow(card, row);
+	}
+
 
 	// Plays a scorch card
 	async playScorch(card){
@@ -331,7 +297,8 @@ class CardContainer {
 		return this.cards.map(c => c.name);
 	}
 	findCardByName(name) {
-		return this.cards.findIndex(c => c.name === name);
+		let idx = this.cards.findIndex(c => c.name === name);
+		return this.cards[idx];
 	}
 	
 	// Returns the first card that satisfies the predcicate. Does not modify container.
@@ -661,17 +628,43 @@ class Row extends CardContainer {
 		}
 		this.updateState(card, true);
 		for (let x of card.placed) {
-			if (game.currPlayer !== player1 && card.abilities.includes("medic")) continue;
-			let res = await x(card, this);
-
-			if (game.currPlayer !== player1) continue;
-
-			if (card.abilities.includes("spy")) {
-				socket.emit("updateHand", playerServerId, playerNum, res, false);
+			if (game.currPlayer === player1)
+			{
+				let res = await x(card, this);
+				if (card.abilities.includes("spy")) {
+					socket.emit("updateHand", playerServerId, playerNum, res, false);
+				}
+				else if (card.abilities.includes("medic")) {
+					socket.emit("placeCard", playerServerId, playerNum, "medic", card.name, card.row.index, res);
+				}
 			}
-			if (card.abilities.includes("medic")) {
-				socket.emit("placeCard", playerServerId, playerNum, card.name, null, false, null, true, res);
+			else {
+				if (card.abilities.includes("medic")) {
+					// player2.grave.removeCard(player2.cardToRevive);
+					// player2.grave.addCard(player2.cardToRevive);
+					console.log("medic card: " + card);
+					console.log("card to revive: " + player2.cardToRevive);
+					await player2.cardToRevive.animate("medic");
+					await player2.cardToRevive.autoplay(player2.grave);
+					player2.endTurn();
+				}
+				else if (card.abilities.includes("spy")) {
+					await card.animate("spy");
+					card.holder = card.holder.opponent();
+				}
+				else {
+					let res = await x(card, this);
+				}
 			}
+
+
+
+
+
+			// if (game.currPlayer === player1) {
+			// 	await x(card, this);
+			// 	continue;
+			// }
 		}
 		card.elem.classList.add("noclick");
 		await sleep(600);
@@ -953,12 +946,6 @@ class Board {
 	async moveTo(card, dest, source) {
 		if (isString(dest))
 			dest = this.getRow(card, dest);
-		if (dest instanceof HandOpponent) {
-			// console.log(card.name);
-			// console.log(dest);
-			// console.log(card);
-			// console.log(card.elem);
-		}
 		await translateTo(card, source ? source : null, dest);
 		await dest.addCard(source ? source.removeCard(card) : card);
 	}
@@ -1089,7 +1076,7 @@ class Game {
 	async initialRedraw(){
 		// for (let i=0; i< 2; i++)
 		// 	player2.controller.redraw();
-		// await ui.queueCarousel(player1.hand, 2, async (c, i) => await player1.deck.swap(c, c.removeCard(i)), c => true, true, true, "Choose up to 2 cards to redraw.");
+		await ui.queueCarousel(player1.hand, 2, async (c, i) => await player1.deck.swap(c, c.removeCard(i)), c => true, true, true, "Choose up to 2 cards to redraw.");
 		ui.enablePlayer(false);
 
 		// console.log("initialRedraw");
@@ -1503,12 +1490,8 @@ class UI {
 		else
 			ui.youtube.pauseVideo();
 		this.ytActive = enable;
-}
-	
-	async decoyOpponentA(targ, row, card) {
-		setTimeout(() => board.moveTo(targ, player2.hand, row), 1000);
-		await player2.playCardToRow(card, row);
 	}
+	
 
 	async decoyOpponent(card, row, pCard) {
 		board.toOpponentHand(card, row);
@@ -1527,7 +1510,7 @@ class UI {
 			this.showPreview(card);
 		} else if (pCard.name === "Decoy") {
 			if (game.currPlayer === player1) {
-				socket.emit("placeCard", playerServerId, playerNum, pCard.name, row.index, true, card.name);
+				socket.emit("placeCard", playerServerId, playerNum, "decoy", pCard.name, row.index, card.name);
 			}
 			this.hidePreview(card);
 			this.enablePlayer(false);
@@ -1549,7 +1532,9 @@ class UI {
 
 		// TODO: make sure all cards are processed
 		if (game.currPlayer === player1) {
-			socket.emit("placeCard", playerServerId, playerNum, this.previewCard.name, row.index, false, null);
+			if (!(this.previewCard.abilities.includes("medic"))) {
+				socket.emit("placeCard", playerServerId, playerNum, (row instanceof Weather) ? "weather" : null, this.previewCard.name, row.index, null);
+			}
 		}
 
 		let card = this.previewCard;
@@ -1654,11 +1639,11 @@ class UI {
 	// Suspends gameplay until the Carousel is closed. Automatically picks random card if activated for AI player
 	async queueCarousel(container, count, action, predicate, bSort, bQuit, title){
 		if (game.currPlayer === player2) {
-			if (player2.controller instanceof ControllerAI)
-				for (let i=0; i<count; ++i){
-					let cards = container.cards.reduce((a,c,i) => !predicate || predicate(c) ? a.concat([i]) : a, []);
-					await action(container, cards[randomInt(cards.length)]);
-				}
+			// if (player2.controller instanceof )
+			// 	for (let i=0; i<count; ++i){
+			// 		let cards = container.cards.reduce((a,c,i) => !predicate || predicate(c) ? a.concat([i]) : a, []);
+			// 		await action(container, cards[randomInt(cards.length)]);
+			// 	}
 			return;
 		}
 		let carousel = new Carousel(container, count, action, predicate, bSort, bQuit, title);
