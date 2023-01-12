@@ -6,9 +6,8 @@ var factions = {
 		factionAbility: player => game.roundStart.push( async () => {
 			if (game.roundCount > 1 && game.roundHistory[game.roundCount-2].winner === player) {
 				if (player === player1) {
-					let newName = player.deck.draw(player.hand);
-					console.log(newName);
-					socket.emit("updateHand", playerServerId, playerNum, newName, false);
+					player.deck.draw(player.hand);
+					socket.emit("updateHand", playerServerId, playerNum, player.hand.newCardName, false);
 				}
 
 				await ui.notification("north", 1200);

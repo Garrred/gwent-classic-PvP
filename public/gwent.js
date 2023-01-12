@@ -17,6 +17,7 @@ socket.on(
 socket.on("updateHand", (serverSidePlayer1_cardNames, serverSidePlayer2_cardNames, newRound) => {
 	// console.log(playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames);
 	let cardsToAdd = playerNum === 0 ? serverSidePlayer2_cardNames : serverSidePlayer1_cardNames;
+	
 	if (cardsToAdd) player2.addCardsToOpponentHand(cardsToAdd);
 
 	if (newRound) {
@@ -144,6 +145,14 @@ class Player {
 	}
 	
 	addCardsToOpponentHand(cardNames){
+		if (!(cardNames instanceof Object)) {
+			cardNames = [cardNames];
+			console.log("cardNames is a string");
+		}
+		console.log(typeof cardNames);
+
+		console.log(cardNames);
+		
 		for (let i = 0; i < cardNames.length; i++) {
 			let idx = player2.deck.findCardByName(cardNames[i]);
 			player2.hand.addCard(player2.deck.removeCard(idx));
@@ -525,9 +534,8 @@ class Deck extends CardContainer {
 			// return newCard.name;
 		}
 		else {
-			let newCard = this.cards[0];
+			hand.newCardName = this.cards[0].name;
 			await board.toHand(this.cards[0], this);
-			return newCard.name;
 		}
 	}
 	
@@ -584,6 +592,7 @@ class HandOpponent extends CardContainer {
 class Hand extends CardContainer {
 	constructor(elem){
 		super(elem);
+		this.newCardName = null;
 		this.counter = document.getElementById("hand-count-player1");
 	}
 
