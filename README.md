@@ -19,3 +19,4 @@ Known BUGS:
 - [ ] Figure out what on earth is async and await
 - [ ] Soc faction ability
 - [ ] Figure out strict this
+- [ ] Medic cannot medic medic

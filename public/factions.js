@@ -5,7 +5,12 @@ var factions = {
 		name: "Northern Realms",
 		factionAbility: player => game.roundStart.push( async () => {
 			if (game.roundCount > 1 && game.roundHistory[game.roundCount-2].winner === player) {
-				player.deck.draw(player.hand);
+				if (player === player1) {
+					let newName = player.deck.draw(player.hand);
+					console.log(newName);
+					socket.emit("updateHand", playerServerId, playerNum, newName, false);
+				}
+
 				await ui.notification("north", 1200);
 			}
 			return false;

@@ -1124,9 +1124,6 @@ class Game {
 	async endTurn() {
 		if (this.currPlayer === player1)
 			ui.enablePlayer(false);
-		else {
-			console.log("endTurn");
-		}
 		await this.runEffects(this.turnEnd);
 		if (this.currPlayer.passed)
 			await ui.notification(this.currPlayer.playerTag + "-pass", 1200);
