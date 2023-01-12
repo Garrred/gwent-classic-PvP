@@ -113,14 +113,14 @@ var ability_dict = {
 		description: "Place on your opponent's battlefield (counts towards your opponent's total) and draw 2 cards from your deck. ",
 		placed: async (card) => {
 			await card.animate("spy");
-			let newCardNames = [];
+			let newCardIds = [];
 			for (let i=0;i<2;i++) {
 				if (card.holder.deck.cards.length > 0)
-					newCardNames.push(await card.holder.deck.draw(card.holder.hand));
+				newCardIds.push(await card.holder.deck.draw(card.holder.hand));
 				
 			}
 			card.holder = card.holder.opponent();
-			return newCardNames;
+			return newCardIds;
 		}
 	},
 	medic: {
@@ -147,7 +147,7 @@ var ability_dict = {
 			grave.addCard(res);
 			await res.animate("medic");
 			await res.autoplay(grave);
-			return res.name;
+			return res.id;
 		}
 	},
 	morale: {

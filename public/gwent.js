@@ -28,29 +28,29 @@ socket.on("passRound", () => {
 	game.currPlayer.passRound();
 });
 
-socket.on("placeCard", (playerNum_placed, type, cardName, rowIdx, specialCardName) => {
+socket.on("placeCard", (playerNum_placed, type, cardId, rowIdx, specialCardId) => {
 	if (playerNum === playerNum_placed) return;
 	
 	let row = board.row[5 - rowIdx];
-	let card = player2.hand.findCardByName(cardName);
+	let card = player2.hand.findCardById(cardId);
 
 	switch (type) {
 		case null: 
 			player2.playCardToRow(card, row);
 			break;
 		case "medic":
-			// console.log(player2.grave.findCardByName(specialCardName));
-			// player2.cardToRevive = player2.grave.findCardByName(specialCardName);
+			// console.log(player2.grave.findCardById(specialCardName));
+			// player2.cardToRevive = player2.grave.findCardById(specialCardName);
 			
-			player2.cardToRevive = player2.grave.findCardByName(specialCardName);
+			player2.cardToRevive = player2.grave.findCardById(specialCardId);
 			console.log("pre - card to revive: " + player2.cardToRevive);
 			card.autoplay(player2.hand);
 			// player2.playCardToRow(card, row);
-			// player2.grave.findCardByName(specialCardName).autoplay(player2.grave);
+			// player2.grave.findCardById(specialCardName).autoplay(player2.grave);
 
 			break;
 		case "decoy":
-			player2.playDecoy(row.findCardByName(specialCardName), row, card);
+			player2.playDecoy(row.findCardById(specialCardId), row, card);
 			break;
 		case "weather":
 			player2.playCardToRow(card, weather);
@@ -143,9 +143,9 @@ class Player {
 		this.endTurn();
 	}
 	
-	addCardsToOpponentHand(cardNames){
-		for (let i = 0; i < cardNames.length; i++) {
-			let idx = player2.deck.findCardByName(cardNames[i]);
+	addCardsToOpponentHand(cardIds){
+		for (let i = 0; i < cardIds.length; i++) {
+			let idx = player2.deck.findCardById(cardIds[i]);
 			player2.hand.addCard(player2.deck.removeCard(idx));
 			// player2.deck.findCard()
 			// player2.deck.addCard()
@@ -294,10 +294,10 @@ class CardContainer {
 		this.cards = [];
 	}
 	getAllCardNames(){
-		return this.cards.map(c => c.name);
+		return this.cards.map(c => c.id);
 	}
-	findCardByName(name) {
-		let idx = this.cards.findIndex(c => c.name === name);
+	findCardById(id) {
+		let idx = this.cards.findIndex(c => c.id === id);
 		return this.cards[idx];
 	}
 	
@@ -519,15 +519,10 @@ class Deck extends CardContainer {
 	
 	// Sends the top card to the passed hand
 	async draw(hand){
-		if (hand === player2.hand) {
-			// hand.addCard(this.removeCard(0));
-			// let newCard = this.cards[0];
-			// return newCard.name;
-		}
-		else {
+		if (hand === player1.hand) {
 			let newCard = this.cards[0];
 			await board.toHand(this.cards[0], this);
-			return newCard.name;
+			return newCard.id;
 		}
 	}
 	
@@ -635,7 +630,7 @@ class Row extends CardContainer {
 					socket.emit("updateHand", playerServerId, playerNum, res, false);
 				}
 				else if (card.abilities.includes("medic")) {
-					socket.emit("placeCard", playerServerId, playerNum, "medic", card.name, card.row.index, res);
+					socket.emit("placeCard", playerServerId, playerNum, "medic", card.id, card.row.index, res);
 				}
 			}
 			else {
@@ -1082,7 +1077,7 @@ class Game {
 		// console.log("initialRedraw");
 		// console.log(player1.hand.getAllCardNames());
 
-		socket.emit("updateHand", playerServerId, playerNum, player1.hand.getAllCardNames(), true);
+		socket.emit("updateHand", playerServerId, playerNum, player1.hand.getAllCardIds(), true);
 	}
 	
 	// Initiates a new round of the game
@@ -1510,7 +1505,7 @@ class UI {
 			this.showPreview(card);
 		} else if (pCard.name === "Decoy") {
 			if (game.currPlayer === player1) {
-				socket.emit("placeCard", playerServerId, playerNum, "decoy", pCard.name, row.index, card.name);
+				socket.emit("placeCard", playerServerId, playerNum, "decoy", pCard.id, row.index, card.id);
 			}
 			this.hidePreview(card);
 			this.enablePlayer(false);
@@ -1533,7 +1528,7 @@ class UI {
 		// TODO: make sure all cards are processed
 		if (game.currPlayer === player1) {
 			if (!(this.previewCard.abilities.includes("medic"))) {
-				socket.emit("placeCard", playerServerId, playerNum, (row instanceof Weather) ? "weather" : null, this.previewCard.name, row.index, null);
+				socket.emit("placeCard", playerServerId, playerNum, (row instanceof Weather) ? "weather" : null, this.previewCard.id, row.index, null);
 			}
 		}
 
