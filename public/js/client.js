@@ -11,7 +11,7 @@ if (code.roomCode === undefined) {
 
 roomCode.innerText = code.roomCode;
 // const socket = io();
-const socket = io("https://obscure-oasis-62448.herokuapp.com/");
+const socket = io("https://gwent-classic-pvp.herokuapp.com/");
 
 socket.emit("joinRoom", code.roomCode);
 

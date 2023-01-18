@@ -1,6 +1,6 @@
 "use strict"
 
-var socket = io();
+var socket = io("https://gwent-classic-pvp.herokuapp.com/");
 const roomCode = sessionStorage.getItem("roomCode");
 const playerNum = parseInt(sessionStorage.getItem("playerNum"));
 const playerServerId = parseInt(sessionStorage.getItem("playerId"));
