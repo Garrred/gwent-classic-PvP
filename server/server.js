@@ -1,7 +1,7 @@
 const express = require("express");
 const socketio = require("socket.io");
 const http = require("http");
-// const cors = require("cors");
+const cors = require("cors");
 const {
   userJoin,
   userExit,
@@ -21,8 +21,8 @@ var players = {};
 // var readyCounts = {};
 var roomInfo = {};
 
-app.use(express.static(path.join(__dirname, "public")));
-// app.use(cors());
+app.use(express.static(path.join(__dirname, "../public")));
+app.use(cors());
 let id = 0;
 
 io.on("connection", (socket) => {
