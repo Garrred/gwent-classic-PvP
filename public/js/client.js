@@ -10,7 +10,8 @@ if (code.roomCode === undefined) {
 }
 
 roomCode.innerText = code.roomCode;
-const socket = io();
+// const socket = io();
+const socket = io("https://obscure-oasis-62448.herokuapp.com/");
 
 socket.emit("joinRoom", code.roomCode);
 
