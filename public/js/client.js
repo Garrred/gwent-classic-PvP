@@ -1,5 +1,15 @@
 const roomCode = document.getElementById("room-code");
 
+var xhr = new XMLHttpRequest();
+// xhr.open("GET", "https://example.com/data.json", true);
+xhr.withCredentials = true;
+xhr.setRequestHeader('Access-Control-Allow-Origin', 'https://gwent-classic-pvp.netlify.app');
+xhr.onreadystatechange = function() {
+  if (xhr.readyState === 4 && xhr.status === 200) {
+    // Handle the response
+  }
+};
+xhr.send();
 
 // roomCode.innerHTML = `<h1>${generateCode()}</h1>`;
 var code  = Qs.parse(location.search, {ignoreQueryPrefix: true});
