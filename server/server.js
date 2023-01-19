@@ -21,7 +21,7 @@ var players = {};
 // var readyCounts = {};
 var roomInfo = {};
 
-app.use(express.static(path.join(__dirname, "../public")));
+// app.use(express.static(path.join(__dirname, "../public")));
 app.use(cors());
 let id = 0;
 
