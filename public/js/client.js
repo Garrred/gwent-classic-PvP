@@ -1,7 +1,7 @@
 const roomCode = document.getElementById("room-code");
 
 var xhr = new XMLHttpRequest();
-// xhr.open("GET", "https://example.com/data.json", true);
+xhr.open("GET", "https://gwent-classic-pvp.netlify.app", true);
 xhr.withCredentials = true;
 xhr.setRequestHeader('Access-Control-Allow-Origin', 'https://gwent-classic-pvp.netlify.app');
 xhr.onreadystatechange = function() {
