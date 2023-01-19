@@ -22,11 +22,23 @@ var roomInfo = {};
 
 // app.use(express.static(path.join(__dirname, "../public")));
 // app.use(cors());
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+
+app.use(cors({
+  origin: 'https://gwent-classic-pvp.netlify.app', // replace this with the origin that the client is sending
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type']
+}));
+
+app.get('/', (req, res) => {
+  res.json({ message: 'Hello, World!' });
 });
+
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "https://gwent-classic-pvp.netlify.app");
+//   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+//   res.header("Access-Control-Allow-Headers", "Content-Type");
+//   next();
+// });
 
 let id = 0;
 
