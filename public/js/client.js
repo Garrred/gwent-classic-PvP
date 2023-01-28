@@ -42,9 +42,13 @@ if (code.roomCode === undefined) {
 
 roomCode.innerText = code.roomCode;
 // const socket = io();
+
 const socket = io("https://gwent-classic-pvp.herokuapp.com/");
+console.log("Initialized socket");
 
 socket.emit("joinRoom", code.roomCode);
+
+console.log("Joined room");
 
 // socket.on("gameReady", () => {
 //   console.log("GAME READY!");

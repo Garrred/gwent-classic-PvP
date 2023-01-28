@@ -52,6 +52,24 @@ app.get('/', (req, res) => {
 //   next();
 // });
 
+
+
+
+// /let whitelist = ["https://playlist-manager-admin.herokuapp.com/", "https://playlist-manager-user.herokuapp.com/"];/
+
+// const corsOptions = { origin: ["https://playlist-manager-admin.herokuapp.com", "https://playlist-manager-user.herokuapp.com"], credentials: true }
+
+// app.use(cors(corsOptions));
+
+// app.use("/", routes);
+
+
+
+
+
+
+
+
 let id = 0;
 
 io.on("connection", (socket) => {
