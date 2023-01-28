@@ -62,6 +62,7 @@ socket.on("setId", ( id, num ) => {
   // console.log("Player Number: " + num);
 })
 
+console.log("Set Id");
 
 socket.on("startGame", () => {
   window.location.pathname = "./gwent.html";
