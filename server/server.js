@@ -40,9 +40,13 @@ app.use(cors({
 //   next();
 // });
 
-
 app.get('/', (req, res) => {
-  res.json({ message: 'Hello, World!' });
+  res.write('Hello World!');
+  res.end();
+});
+app.get('/start', (req, res) => {
+  res.write('Start');
+  res.end();
 });
 
 // app.use((req, res, next) => {
