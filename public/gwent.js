@@ -1220,7 +1220,9 @@ class Game {
 		player1.reset();
 		player2.reset();
 		this.endScreen.classList.add("hide");
-		this.startGame();
+		
+    	socket.emit("readyToStart", player1_deck, playerNum, playerServerId);
+		// this.startGame();
 	}
 	
 	// Executes effects in list. If effect returns true, effect is removed.

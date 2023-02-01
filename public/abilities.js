@@ -243,15 +243,10 @@ var ability_dict = {
 	emhyr_relentless: {
 		description: "Draw a card from your opponent's discard pile.",
 		activated: async card => {
+			if (game.currPlayer === player2) return;
 			let grave = board.getRow(card, "grave", card.holder.opponent());
 			if (grave.findCards(c => c.isUnit()).length === 0)
 				return;
-			if (card.holder.controller instanceof ControllerAI) {
-				let newCard = card.holder.controller.medic(card, grave);
-				newCard.holder = card.holder;
-				await board.toHand(newCard, grave);
-				return;
-			}
 			Carousel.curr.cancel();
 			await ui.queueCarousel(grave, 1, (c,i) => {
 				let newCard = c.cards[i];
@@ -259,7 +254,6 @@ var ability_dict = {
 				board.toHand(newCard, grave);
 			}, c => c.isUnit(), true);
 		},
-		weight: (card, ai, max, data) => ai.weightMedic(data, 0, card.holder.opponent())
 	},
 	emhyr_invader: {
 		description: "Abilities that restore a unit to the battlefield restore a randomly-chosen unit. Affects both players.",
